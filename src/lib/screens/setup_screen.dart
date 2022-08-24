@@ -26,7 +26,7 @@ class _SetupScreenState extends State<SetupScreen> {
   bool weightIsValid = true;
   bool ageIsValid = true;
 
-  int _currentGoal = 2000;
+  int _currentGoal = 100;
   int activeTabIndex = 0;
 
   @override
@@ -85,8 +85,12 @@ class _SetupScreenState extends State<SetupScreen> {
                     context, HomeScreen.routeName, (_) => false));
           }
         },
-        style:
-            ElevatedButton.styleFrom(primary: Theme.of(context).primaryColor),
+        style: ElevatedButton.styleFrom(
+            elevation: 10,
+            shadowColor: const Color.fromARGB(255, 4, 217, 255).withOpacity(.5),
+            primary: Theme.of(context).primaryColor,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20))),
         child: Text(
           activeTabIndex == 0 ? "Calculate and Finish" : "Finish",
           style: const TextStyle(
@@ -108,9 +112,10 @@ class _SetupScreenState extends State<SetupScreen> {
             Container(
               padding:
                   const EdgeInsets.only(right: 20, left: 15, top: 4, bottom: 4),
-              decoration: BoxDecoration(boxShadow: const [
-                BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.1), blurRadius: 3)
-              ], color: Colors.white, borderRadius: BorderRadius.circular(5)),
+              decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xffE7E7E7)),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10)),
               child: DropdownButton<String>(
                 value: activeUnit,
                 icon: const Icon(
@@ -118,6 +123,7 @@ class _SetupScreenState extends State<SetupScreen> {
                   size: 40,
                   color: Color(0xffD9D9D9),
                 ),
+                dropdownColor: Colors.white,
                 elevation: 1,
                 underline: Container(),
                 borderRadius: BorderRadius.circular(5),
@@ -157,11 +163,8 @@ class _SetupScreenState extends State<SetupScreen> {
                   height: 55,
                   width: 150,
                   decoration: BoxDecoration(
-                      boxShadow: const [
-                        BoxShadow(
-                            color: Color.fromRGBO(0, 0, 0, 0.1), blurRadius: 3)
-                      ],
-                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(color: const Color(0xffE7E7E7)),
+                      borderRadius: BorderRadius.circular(10),
                       color: Colors.white),
                   child: TextField(
                     textAlign: TextAlign.center,
@@ -177,7 +180,7 @@ class _SetupScreenState extends State<SetupScreen> {
                       errorBorder: InputBorder.none,
                       focusedErrorBorder: InputBorder.none,
                       focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
+                          borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide(
                               color: weightIsValid
                                   ? Theme.of(context).primaryColor
@@ -189,7 +192,7 @@ class _SetupScreenState extends State<SetupScreen> {
                                   ? Colors.white
                                   : Colors.redAccent.shade200,
                               width: 2),
-                          borderRadius: BorderRadius.circular(5)),
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                     controller: weightController,
                     keyboardType:
@@ -204,12 +207,9 @@ class _SetupScreenState extends State<SetupScreen> {
                   padding: const EdgeInsets.only(
                       right: 20, left: 15, top: 4, bottom: 4),
                   decoration: BoxDecoration(
-                      boxShadow: const [
-                        BoxShadow(
-                            color: Color.fromRGBO(0, 0, 0, 0.1), blurRadius: 3)
-                      ],
+                      border: Border.all(color: const Color(0xffE7E7E7)),
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(5)),
+                      borderRadius: BorderRadius.circular(10)),
                   child: DropdownButton<String>(
                     value: activeWeightUnit,
                     icon: const Icon(
@@ -218,8 +218,9 @@ class _SetupScreenState extends State<SetupScreen> {
                       color: Color(0xffD9D9D9),
                     ),
                     elevation: 1,
+                    dropdownColor: Colors.white,
                     underline: Container(),
-                    borderRadius: BorderRadius.circular(5),
+                    borderRadius: BorderRadius.circular(10),
                     style:
                         const TextStyle(color: Color(0xff575757), fontSize: 18),
                     onChanged: (String? newValue) {
@@ -255,11 +256,8 @@ class _SetupScreenState extends State<SetupScreen> {
                   height: 55,
                   width: 120,
                   decoration: BoxDecoration(
-                      boxShadow: const [
-                        BoxShadow(
-                            color: Color.fromRGBO(0, 0, 0, 0.1), blurRadius: 3)
-                      ],
-                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(color: const Color(0xffE7E7E7)),
+                      borderRadius: BorderRadius.circular(10),
                       color: Colors.white),
                   child: TextField(
                     onChanged: (_) => validateAge(),
@@ -271,7 +269,7 @@ class _SetupScreenState extends State<SetupScreen> {
                       alignLabelWithHint: true,
                       floatingLabelBehavior: FloatingLabelBehavior.never,
                       focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5),
+                          borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide(
                               color: ageIsValid
                                   ? Theme.of(context).primaryColor
@@ -283,7 +281,7 @@ class _SetupScreenState extends State<SetupScreen> {
                                   ? Colors.white
                                   : Colors.redAccent.shade200,
                               width: 2),
-                          borderRadius: BorderRadius.circular(5)),
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                     controller: ageController,
                     keyboardType:
@@ -314,7 +312,7 @@ class _SetupScreenState extends State<SetupScreen> {
           Row(
             children: [
               NumberPicker(
-                  minValue: 100,
+                  minValue: activeUnit == "ml" ? 100 : 5,
                   maxValue: 10000,
                   itemHeight: 50,
                   textStyle: const TextStyle(
@@ -330,7 +328,7 @@ class _SetupScreenState extends State<SetupScreen> {
                               width: 1.5,
                               color: Theme.of(context).primaryColor))),
                   value: _currentGoal,
-                  step: 100,
+                  step: activeUnit == "ml" ? 100 : 5,
                   haptics: true,
                   onChanged: (value) {
                     setState(() {
@@ -381,26 +379,6 @@ class _SetupScreenState extends State<SetupScreen> {
     );
 
     return Scaffold(
-        /* appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Setup",
-            style: TextStyle(color: Colors.white),
-          ),
-          systemOverlayStyle: const SystemUiOverlayStyle(
-            // Status bar color
-            statusBarColor: Colors.transparent,
-
-            // Status bar brightness (optional)
-            statusBarIconBrightness:
-                Brightness.light, // For Android (dark icons)
-            statusBarBrightness: Brightness.light, // For iOS (dark icons)
-          ),
-          backgroundColor: Theme.of(context).primaryColor,
-          surfaceTintColor: Colors.white,
-          shadowColor: Colors.black12,
-          elevation: 3,
-        ), */
         body: DefaultTabController(
       length: 2,
       child: SingleChildScrollView(
@@ -422,7 +400,7 @@ class _SetupScreenState extends State<SetupScreen> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: SizedBox(
-                height: 60,
+                height: 55,
                 width: double.infinity,
                 child: finishButton,
               ),

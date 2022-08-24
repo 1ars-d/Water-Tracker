@@ -24,14 +24,15 @@ class NavBar extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(
-                      width: 100,
+                      width: 110,
                       child: MaterialButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100)),
+                        splashColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
                         onPressed: () {
                           setPage(0);
                         },
-                        minWidth: 40,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -64,10 +65,13 @@ class NavBar extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(
-                      width: 100,
+                      width: 110,
                       child: MaterialButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100)),
+                        splashColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        enableFeedback: false,
                         onPressed: () {
                           setPage(1);
                         },
@@ -86,7 +90,7 @@ class NavBar extends StatelessWidget {
                               style: TextStyle(
                                   color: activeIndex == 1
                                       ? Colors.black87
-                                      : Color.fromRGBO(0, 0, 0, 0.3)),
+                                      : const Color.fromRGBO(0, 0, 0, 0.3)),
                             )
                           ],
                         ),

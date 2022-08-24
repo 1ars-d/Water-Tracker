@@ -45,6 +45,8 @@ dependencies:
   # hive database
   hive: ^2.0.3
   hive_flutter: ^1.0.0
+  fl_chart: ^0.55.1
+  flutter_svg: ^1.1.4
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +79,7 @@ flutter:
     - assets/IMG/soft_drink.png
     - assets/IMG/coffee.png
     - assets/IMG/milk.png
+    - assets/IMG/welcome_screen.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

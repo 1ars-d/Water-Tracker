@@ -15,6 +15,8 @@ void main() async {
   Hive.registerAdapter(DrinkAmountAdapter());
   await Hive.openBox<DrinkAmount>('drink_amounts');
 
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
   runApp(const MyApp());
 }
 
@@ -40,8 +42,10 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     // Set color of systemnavigation
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light
-        .copyWith(systemNavigationBarColor: Colors.white));
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarContrastEnforced: true,
+        systemNavigationBarIconBrightness: Brightness.dark));
 
     return MaterialApp(
       title: 'Flutter Demo',

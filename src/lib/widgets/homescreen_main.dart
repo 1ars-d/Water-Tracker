@@ -36,19 +36,26 @@ class HomescreenMain extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Progress(
-            prevAmount: prevAmount,
-            prevIntake: prevIntake,
-            intakeAmount: int.parse(snapshot.data.toString()) +
-                (sunnySnapshot.connectionState == ConnectionState.done &&
-                        sunnySnapshot.data as bool
-                    ? 500
-                    : 0) +
-                (activeSnapshot.connectionState == ConnectionState.done &&
-                        activeSnapshot.data as bool
-                    ? 500
-                    : 0),
-            todaysAmount: todaysDrinkAmount),
+        Container(
+          alignment: Alignment.center,
+          height: MediaQuery.of(context).size.height,
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: Progress(
+                prevAmount: prevAmount,
+                prevIntake: prevIntake,
+                intakeAmount: int.parse(snapshot.data.toString()) +
+                    (sunnySnapshot.connectionState == ConnectionState.done &&
+                            sunnySnapshot.data as bool
+                        ? 500
+                        : 0) +
+                    (activeSnapshot.connectionState == ConnectionState.done &&
+                            activeSnapshot.data as bool
+                        ? 500
+                        : 0),
+                todaysAmount: todaysDrinkAmount),
+          ),
+        ),
         TopActions(
             sunny_snapshot: sunnySnapshot,
             sunnyIntakeChange: sunnyIntakeChange,

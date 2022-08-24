@@ -71,7 +71,14 @@ class _NavigationControllerState extends State<NavigationController> {
                   drinksAmounts: drinkAmounts,
                 );
               }),
-          const StatisticsScreen(),
+          ValueListenableBuilder<Box<DrinkAmount>>(
+              valueListenable: Boxes.getDrinkAmounts().listenable(),
+              builder: (context, box, _) {
+                final drinkAmounts = box.values.toList().cast<DrinkAmount>();
+                return StatisticsScreen(
+                  drinksAmounts: drinkAmounts,
+                );
+              }),
         ],
       ),
       floatingActionButton: SizedBox(
@@ -81,6 +88,7 @@ class _NavigationControllerState extends State<NavigationController> {
           onPressed: () {
             showModalBottomSheet(
                 elevation: 10,
+                backgroundColor: Colors.white,
                 shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(10),

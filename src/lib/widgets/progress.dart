@@ -23,23 +23,51 @@ class Progress extends StatefulWidget {
   State<Progress> createState() => _ProgressState();
 }
 
-class _ProgressState extends State<Progress> {
+class _ProgressState extends State<Progress>
+    with SingleTickerProviderStateMixin {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+  late AnimationController _animationController;
+  late Animation _animationTween;
+
+  @override
+  void initState() {
+    super.initState();
+    activeUnit = _prefs.then((SharedPreferences prefs) {
+      return prefs.getString('unit') ?? "";
+    });
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _animationTween = ColorTween(
+            begin: const Color.fromRGBO(0, 0, 0, 0.07),
+            end: const Color.fromARGB(255, 4, 217, 255).withOpacity(.3))
+        .animate(_animationController);
+    _animationController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  bool show_shadow = false;
 
   int _currentGoal = 2000;
 
   late Future<String> activeUnit;
 
   @override
-  void initState() {
-    activeUnit = _prefs.then((SharedPreferences prefs) {
-      return prefs.getString('unit') ?? "";
-    });
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    if (widget.todaysAmount >= widget.intakeAmount) {
+      _animationController.forward();
+    } else {
+      _animationController.reverse();
+    }
     int usePrevIntake =
         widget.prevIntake > 0 ? widget.prevIntake : widget.intakeAmount;
     return SizedBox(
@@ -63,6 +91,10 @@ class _ProgressState extends State<Progress> {
               onAxisTapped: (value) {},
               pointers: <GaugePointer>[
                 RangePointer(
+                    gradient: SweepGradient(colors: [
+                      Theme.of(context).primaryColor,
+                      const Color.fromARGB(255, 74, 213, 255)
+                    ]),
                     enableAnimation: true,
                     animationType: AnimationType.ease,
                     animationDuration: 1000,
@@ -79,15 +111,14 @@ class _ProgressState extends State<Progress> {
               annotations: <GaugeAnnotation>[
                 GaugeAnnotation(
                   widget: Container(
-                    height: 290,
-                    width: 290,
+                    margin: const EdgeInsets.all(40),
                     padding: const EdgeInsets.only(bottom: 15),
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(800),
-                        boxShadow: const [
+                        boxShadow: [
                           BoxShadow(
-                            color: Color.fromRGBO(0, 0, 0, 0.07),
+                            color: _animationTween.value,
                             blurRadius: 52,
                           )
                         ]),
