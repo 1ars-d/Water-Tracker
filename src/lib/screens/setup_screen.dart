@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,16 +17,17 @@ class SetupScreen extends StatefulWidget {
 }
 
 class _SetupScreenState extends State<SetupScreen> {
-  String activeUnit = "ml";
+  String activeUnit = "";
   String activeWeightUnit = "kg";
 
-  TextEditingController weightController = TextEditingController(text: "0");
-  TextEditingController ageController = TextEditingController(text: "0");
+  TextEditingController weightController = TextEditingController();
+  TextEditingController ageController = TextEditingController();
   bool weightIsValid = true;
   bool ageIsValid = true;
 
   int _currentGoal = 100;
   int activeTabIndex = 0;
+  bool unitIsValid = true;
 
   @override
   void initState() {
@@ -61,86 +61,89 @@ class _SetupScreenState extends State<SetupScreen> {
     return true;
   }
 
+  bool validateUnit() {
+    if (activeUnit != "") {
+      setState(() {
+        unitIsValid = true;
+      });
+      return true;
+    } else {
+      setState(() {
+        unitIsValid = false;
+      });
+      return false;
+    }
+  }
+
+  void onSubmit() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (validateUnit()) {
+      final bool calculateiInputDataIsValid = validateWeight() && validateAge();
+      if (activeTabIndex == 0 && calculateiInputDataIsValid) {
+        prefs.setString("unit", activeUnit);
+        prefs
+            .setInt(
+                "intake_amount",
+                calculateIntake(
+                    num.parse(weightController.text),
+                    int.parse(ageController.text),
+                    activeWeightUnit,
+                    activeUnit))
+            .then((value) => Navigator.pushNamedAndRemoveUntil(
+                context, HomeScreen.routeName, (_) => false));
+      } else if (activeTabIndex == 1) {
+        prefs.setString("unit", activeUnit);
+        prefs.setInt("intake_amount", _currentGoal).then((value) =>
+            Navigator.pushNamedAndRemoveUntil(
+                context, HomeScreen.routeName, (_) => false));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final finishButton = ElevatedButton(
-        onPressed: () async {
-          final prefs = await SharedPreferences.getInstance();
-          if (activeTabIndex == 0 && validateWeight() && validateAge()) {
-            prefs.setString("unit", activeUnit);
-            await prefs
-                .setInt(
-                    "intake_amount",
-                    calculate_intake(
-                        num.parse(weightController.text),
-                        int.parse(ageController.text),
-                        activeWeightUnit,
-                        activeUnit))
-                .then((value) => Navigator.pushNamedAndRemoveUntil(
-                    context, HomeScreen.routeName, (_) => false));
-          } else if (activeTabIndex == 1) {
-            prefs.setString("unit", activeUnit);
-            prefs.setInt("intake_amount", _currentGoal).then((value) =>
-                Navigator.pushNamedAndRemoveUntil(
-                    context, HomeScreen.routeName, (_) => false));
-          }
-        },
-        style: ElevatedButton.styleFrom(
-            elevation: 10,
-            shadowColor: const Color.fromARGB(255, 4, 217, 255).withOpacity(.5),
-            primary: Theme.of(context).primaryColor,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20))),
-        child: Text(
-          activeTabIndex == 0 ? "Calculate and Finish" : "Finish",
-          style: const TextStyle(
-              fontSize: 19, color: Colors.white, fontWeight: FontWeight.w600),
-        ));
-
     final unitSelection = Padding(
         padding: const EdgeInsets.all(25),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Choose Unit",
-              style: TextStyle(fontSize: 22, color: Color(0xFF3B3B3B)),
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            Container(
-              padding:
-                  const EdgeInsets.only(right: 20, left: 15, top: 4, bottom: 4),
-              decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xffE7E7E7)),
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10)),
-              child: DropdownButton<String>(
-                value: activeUnit,
-                icon: const Icon(
-                  Icons.arrow_drop_down,
-                  size: 40,
-                  color: Color(0xffD9D9D9),
-                ),
-                dropdownColor: Colors.white,
-                elevation: 1,
-                underline: Container(),
-                borderRadius: BorderRadius.circular(5),
-                style: const TextStyle(color: Color(0xff575757), fontSize: 18),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    activeUnit = newValue!;
-                  });
-                },
-                items: <String>['ml', 'oz UK', 'oz US']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
+            DropdownButton<String>(
+              value: activeUnit == "" ? null : activeUnit,
+              icon: const Icon(
+                Icons.arrow_drop_down,
+                size: 30,
+                color: Color(0xffD9D9D9),
               ),
+              dropdownColor: Colors.white,
+              underline: Container(
+                color: !unitIsValid
+                    ? Colors.red
+                    : activeUnit != ""
+                        ? Theme.of(context).primaryColor
+                        : Colors.black26,
+                height: 1,
+              ),
+              borderRadius: BorderRadius.circular(5),
+              onChanged: (String? newValue) {
+                setState(() {
+                  activeUnit = newValue!;
+                  unitIsValid = true;
+                  if (newValue == "ml") {
+                    _currentGoal = 100;
+                  } else {
+                    _currentGoal = 5;
+                  }
+                });
+              },
+              elevation: 1,
+              hint: const Text("Choose Unit"),
+              items: <String>['ml', 'oz UK', 'oz US']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
             ),
           ],
         ));
@@ -152,48 +155,39 @@ class _SetupScreenState extends State<SetupScreen> {
           children: [
             const Text(
               "Select your Weight",
-              style: TextStyle(fontSize: 20, color: Color(0xFF3B3B3B)),
+              style: TextStyle(fontSize: 18, color: Color(0xFF3B3B3B)),
             ),
             const SizedBox(
               height: 15,
             ),
             Row(
               children: [
-                Container(
+                SizedBox(
                   height: 55,
                   width: 150,
-                  decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xffE7E7E7)),
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.white),
                   child: TextField(
-                    textAlign: TextAlign.center,
                     onChanged: (_) {
                       validateWeight();
                     },
+                    decoration: InputDecoration(
+                      label: const Text("Weight"),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: weightIsValid
+                                ? Theme.of(context).primaryColor
+                                : Colors.red,
+                            width: 1.5),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: weightIsValid
+                                ? const Color(0xffD9D9D9)
+                                : Colors.red,
+                            width: 1.5),
+                      ),
+                    ),
                     style: const TextStyle(
                         color: Colors.black87, fontWeight: FontWeight.w100),
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.only(bottom: 30),
-                      alignLabelWithHint: true,
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                      errorBorder: InputBorder.none,
-                      focusedErrorBorder: InputBorder.none,
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color: weightIsValid
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.redAccent.shade200,
-                              width: 2)),
-                      enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                              color: weightIsValid
-                                  ? Colors.white
-                                  : Colors.redAccent.shade200,
-                              width: 2),
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
                     controller: weightController,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
@@ -202,40 +196,30 @@ class _SetupScreenState extends State<SetupScreen> {
                 const SizedBox(
                   width: 20,
                 ),
-                Container(
-                  margin: const EdgeInsets.only(right: 10),
-                  padding: const EdgeInsets.only(
-                      right: 20, left: 15, top: 4, bottom: 4),
-                  decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xffE7E7E7)),
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10)),
-                  child: DropdownButton<String>(
-                    value: activeWeightUnit,
-                    icon: const Icon(
-                      Icons.arrow_drop_down,
-                      size: 40,
-                      color: Color(0xffD9D9D9),
-                    ),
-                    elevation: 1,
-                    dropdownColor: Colors.white,
-                    underline: Container(),
-                    borderRadius: BorderRadius.circular(10),
-                    style:
-                        const TextStyle(color: Color(0xff575757), fontSize: 18),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        activeWeightUnit = newValue!;
-                      });
-                    },
-                    items: <String>['kg', 'lbs']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
+                DropdownButton<String>(
+                  value: activeWeightUnit,
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    size: 30,
+                    color: Color(0xffD9D9D9),
                   ),
+                  elevation: 1,
+                  dropdownColor: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  style:
+                      const TextStyle(color: Color(0xff575757), fontSize: 18),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      activeWeightUnit = newValue!;
+                    });
+                  },
+                  items: <String>['kg', 'lbs']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
                 ),
               ],
             ),
@@ -252,36 +236,27 @@ class _SetupScreenState extends State<SetupScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
+                SizedBox(
                   height: 55,
                   width: 120,
-                  decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xffE7E7E7)),
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.white),
                   child: TextField(
                     onChanged: (_) => validateAge(),
-                    style: const TextStyle(
-                        color: Colors.black87, fontWeight: FontWeight.w100),
-                    textAlign: TextAlign.center,
                     decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.only(bottom: 30),
-                      alignLabelWithHint: true,
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
+                      label: const Text("Age"),
                       focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color: ageIsValid
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.redAccent.shade200,
-                              width: 2)),
+                        borderSide: BorderSide(
+                            color: ageIsValid
+                                ? Theme.of(context).primaryColor
+                                : Colors.red,
+                            width: 1.5),
+                      ),
                       enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                              color: ageIsValid
-                                  ? Colors.white
-                                  : Colors.redAccent.shade200,
-                              width: 2),
-                          borderRadius: BorderRadius.circular(10)),
+                        borderSide: BorderSide(
+                            color: ageIsValid
+                                ? const Color(0xffD9D9D9)
+                                : Colors.red,
+                            width: 1.5),
+                      ),
                     ),
                     controller: ageController,
                     keyboardType:
@@ -302,48 +277,51 @@ class _SetupScreenState extends State<SetupScreen> {
 
     final manualSide = Padding(
       padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Select your Goal manually",
-            style: TextStyle(fontSize: 20, color: Color(0xFF3B3B3B)),
-          ),
-          Row(
-            children: [
-              NumberPicker(
-                  minValue: activeUnit == "ml" ? 100 : 5,
-                  maxValue: 10000,
-                  itemHeight: 50,
-                  textStyle: const TextStyle(
-                      color: Color.fromRGBO(0, 0, 0, 0.3), fontSize: 18),
-                  selectedTextStyle: TextStyle(
-                      color: Theme.of(context).primaryColor, fontSize: 18),
-                  decoration: BoxDecoration(
-                      border: Border(
-                          bottom: BorderSide(
-                              width: 1.5,
-                              color: Theme.of(context).primaryColor),
-                          top: BorderSide(
-                              width: 1.5,
-                              color: Theme.of(context).primaryColor))),
-                  value: _currentGoal,
-                  step: activeUnit == "ml" ? 100 : 5,
-                  haptics: true,
-                  onChanged: (value) {
-                    setState(() {
-                      _currentGoal = value;
-                    });
-                  }),
-              Text(
-                activeUnit,
-                style: TextStyle(
-                    fontSize: 19, color: Theme.of(context).primaryColor),
-              )
-            ],
-          )
-        ],
-      ),
+      child: activeUnit == ""
+          ? const Center(child: Text("Please select a unit"))
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Select your Goal manually",
+                  style: TextStyle(fontSize: 18, color: Color(0xFF3B3B3B)),
+                ),
+                Row(
+                  children: [
+                    NumberPicker(
+                        minValue: activeUnit == "ml" ? 100 : 5,
+                        maxValue: 10000,
+                        itemHeight: 50,
+                        textStyle: const TextStyle(
+                            color: Color.fromRGBO(0, 0, 0, 0.3), fontSize: 18),
+                        selectedTextStyle: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontSize: 18),
+                        decoration: BoxDecoration(
+                            border: Border(
+                                bottom: BorderSide(
+                                    width: 1.5,
+                                    color: Theme.of(context).primaryColor),
+                                top: BorderSide(
+                                    width: 1.5,
+                                    color: Theme.of(context).primaryColor))),
+                        value: _currentGoal,
+                        step: activeUnit == "ml" ? 100 : 5,
+                        haptics: true,
+                        onChanged: (value) {
+                          setState(() {
+                            _currentGoal = value;
+                          });
+                        }),
+                    Text(
+                      activeUnit,
+                      style: TextStyle(
+                          fontSize: 19, color: Theme.of(context).primaryColor),
+                    )
+                  ],
+                )
+              ],
+            ),
     );
 
     final tabBar = Column(
@@ -359,7 +337,7 @@ class _SetupScreenState extends State<SetupScreen> {
           unselectedLabelColor: const Color(0xff8C8C8C),
           labelColor: Theme.of(context).primaryColor,
           unselectedLabelStyle:
-              const TextStyle(fontWeight: FontWeight.normal, fontSize: 19),
+              const TextStyle(fontWeight: FontWeight.normal, fontSize: 17),
           labelPadding: const EdgeInsets.only(bottom: 5),
           tabs: const [
             Tab(
@@ -379,35 +357,65 @@ class _SetupScreenState extends State<SetupScreen> {
     );
 
     return Scaffold(
-        body: DefaultTabController(
-      length: 2,
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.only(top: 20),
-              height: MediaQuery.of(context).size.height - 100,
-              child: SingleChildScrollView(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      unitSelection,
-                      tabBar,
-                    ]),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: SizedBox(
-                height: 55,
-                width: double.infinity,
-                child: finishButton,
-              ),
-            ),
-          ],
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          surfaceTintColor: Colors.white,
+          leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios),
+              onPressed: () => Navigator.pop(context)),
         ),
-      ),
-    ));
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: onSubmit,
+          backgroundColor: Theme.of(context).primaryColor,
+          icon: Text(
+            activeTabIndex == 0 ? "Finish" : "Finish",
+            style: const TextStyle(
+                fontSize: 19, color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+          extendedIconLabelSpacing: 15,
+          label: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+        ),
+        body: DefaultTabController(
+          length: 2,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: SingleChildScrollView(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.only(left: 20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  "Setup",
+                                  style: TextStyle(
+                                      fontSize: 30,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xff3F3D56)),
+                                ),
+                                Text(
+                                  "Setup your weight and age to calculate your water intake, or choose it manually",
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(0, 0, 0, 0.6)),
+                                )
+                              ],
+                            ),
+                          ),
+                          unitSelection,
+                          tabBar,
+                        ]),
+                  ),
+                ),
+                const SizedBox(),
+              ],
+            ),
+          ),
+        ));
   }
 }

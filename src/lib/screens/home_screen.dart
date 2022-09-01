@@ -1,7 +1,7 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:src/helpers/helpers.dart';
 import 'package:src/models/DrinkAmount.dart';
 import 'package:src/widgets/homescreen_main.dart';
 
@@ -13,10 +13,24 @@ class HomeScreen extends StatefulWidget {
   final dynamic prevIsActive;
   final Function setPrevIsSunny;
   final Function setPrevIsActive;
+  final int intakeAmount;
+  final String activeUnit;
+  final bool isSunny;
+  final Function changeSunny;
+  final Function changeActive;
+  final VoidCallback loadPreferences;
+  final bool isActive;
 
   const HomeScreen(
       {required this.prevIsActive,
+      required this.loadPreferences,
+      required this.changeActive,
+      required this.changeSunny,
+      required this.isActive,
+      required this.isSunny,
       required this.prevIsSunny,
+      required this.activeUnit,
+      required this.intakeAmount,
       required this.setPrevIsActive,
       required this.setPrevIsSunny,
       required this.onAdd,
@@ -29,30 +43,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  late Future<int> intakeAmount;
-  late Future<bool> isSunny;
-  late Future<bool> isActive;
-
   int prevIntake = 0;
-
-  @override
-  void initState() {
-    intakeAmount = _prefs.then((SharedPreferences prefs) {
-      return prefs.getInt('intake_amount') ?? 0;
-    });
-    isSunny = _prefs.then((SharedPreferences prefs) {
-      return prefs.getBool(
-              '${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().year}_isSunny') ??
-          false;
-    });
-    isActive = _prefs.then((SharedPreferences prefs) {
-      return prefs.getBool(
-              '${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().year}_isActive') ??
-          false;
-    });
-    super.initState();
-  }
 
   void setActive(bool value) async {
     final prefs = await SharedPreferences.getInstance();
@@ -60,9 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
         '${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().year}_isActive',
         value);
     widget.setPrevIsActive(!value);
-    setState(() {
-      isActive = Future(() => value);
-    });
+    widget.changeActive(value);
   }
 
   void setSunny(bool value) async {
@@ -71,47 +60,52 @@ class _HomeScreenState extends State<HomeScreen> {
         '${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().year}_isSunny',
         value);
     widget.setPrevIsSunny(!value);
-    setState(() {
-      isSunny = Future(() => value);
-    });
+    widget.changeSunny(value);
   }
 
-  void activeIntakeChange(snapshot, sunnySnapshot, activeSnapshot) {
+  void activeIntakeChange(intakeAmount, isSunny, isActive) {
+    int intakeChangeDifference = getIntakeChangeDifference(widget.activeUnit);
     setState(() {
-      if (sunnySnapshot.data as bool) {
-        if (activeSnapshot.data as bool) {
-          prevIntake = (snapshot.data as int) + 1000;
+      if (isSunny) {
+        if (isActive) {
+          prevIntake = (intakeAmount) + intakeChangeDifference * 2;
         } else {
-          prevIntake = (snapshot.data as int) + 500;
+          prevIntake = (intakeAmount) + intakeChangeDifference;
         }
       } else {
-        if (activeSnapshot.data as bool) {
-          prevIntake = (snapshot.data as int) + 500;
+        if (isActive) {
+          prevIntake = (intakeAmount) + intakeChangeDifference;
         } else {
-          prevIntake = (snapshot.data as int);
+          prevIntake = (intakeAmount);
         }
       }
-      setActive(!(activeSnapshot.data as bool));
+      setActive(!isActive);
     });
   }
 
   void sunnyIntakeChange(snapshot, activeSnapshot, sunnySnapshot) {
+    int intakeChangeDifference = getIntakeChangeDifference(widget.activeUnit);
     setState(() {
-      if (activeSnapshot.data as bool) {
-        if (sunnySnapshot.data as bool) {
-          prevIntake = (snapshot.data as int) + 1000;
+      if (activeSnapshot) {
+        if (sunnySnapshot) {
+          prevIntake = (snapshot) + intakeChangeDifference * 2;
         } else {
-          prevIntake = (snapshot.data as int) + 500;
+          prevIntake = (snapshot) + intakeChangeDifference;
         }
       } else {
-        if (sunnySnapshot.data as bool) {
-          prevIntake = (snapshot.data as int) + 500;
+        if (sunnySnapshot) {
+          prevIntake = (snapshot) + intakeChangeDifference;
         } else {
-          prevIntake = (snapshot.data as int);
+          prevIntake = (snapshot);
         }
       }
-      setSunny(!(sunnySnapshot.data as bool));
+      setSunny(!(sunnySnapshot));
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -130,70 +124,49 @@ class _HomeScreenState extends State<HomeScreen> {
         ? amountsList.reduce((value, e) => value + e)
         : 0;
 
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 0,
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          // Status bar color
-          statusBarColor: Color.fromRGBO(0, 0, 0, 0.02),
+    int intakeChangeDifference = getIntakeChangeDifference(widget.activeUnit);
 
-          // Status bar brightness (optional)
-          statusBarIconBrightness: Brightness.dark, // For Android (dark icons)
-          statusBarBrightness: Brightness.light, // For iOS (dark icons)
+    bool usePrevIsActive = widget.prevIsActive ?? widget.isActive;
+    bool usePrevIsSunny = widget.prevIsSunny ?? widget.isSunny;
+    int prevAmount = todaysDrinkAmount;
+    int usePrevIntake = prevIntake;
+    if (usePrevIsActive == widget.isActive &&
+        usePrevIsSunny == widget.isSunny) {
+      prevAmount =
+          todaysDrinkAmount - (amountsList.isNotEmpty ? amountsList.last : 0);
+      usePrevIntake = (widget.intakeAmount) +
+          (widget.isActive ? intakeChangeDifference : 0) +
+          (widget.isSunny ? intakeChangeDifference : 0);
+    }
+
+    return Scaffold(
+        appBar: AppBar(
+          toolbarHeight: 0,
+          systemOverlayStyle: const SystemUiOverlayStyle(
+            // Status bar color
+            statusBarColor: Color.fromRGBO(0, 0, 0, 0.02),
+
+            // Status bar brightness (optional)
+            statusBarIconBrightness:
+                Brightness.dark, // For Android (dark icons)
+            statusBarBrightness: Brightness.light, // For iOS (dark icons)
+          ),
         ),
-      ),
-      body: Center(
-          child: FutureBuilder<bool>(
-        future: isActive,
-        builder: (activeCtx, activeSnapshot) {
-          return FutureBuilder<bool>(
-              future: isSunny,
-              builder: (sunnyCtx, sunnySnapshot) {
-                return FutureBuilder<int>(
-                    future: intakeAmount,
-                    builder:
-                        (BuildContext context, AsyncSnapshot<int> snapshot) {
-                      switch (snapshot.connectionState) {
-                        case ConnectionState.waiting:
-                          return const CircularProgressIndicator();
-                        default:
-                          if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            bool usePrevIsActive =
-                                widget.prevIsActive ?? activeSnapshot.data;
-                            bool usePrevIsSunny =
-                                widget.prevIsSunny ?? sunnySnapshot.data;
-                            int prevAmount = todaysDrinkAmount;
-                            int usePrevIntake = prevIntake;
-                            if (usePrevIsActive == activeSnapshot.data &&
-                                usePrevIsSunny == sunnySnapshot.data) {
-                              prevAmount = todaysDrinkAmount -
-                                  (amountsList.isNotEmpty
-                                      ? amountsList.last
-                                      : 0);
-                              usePrevIntake = (snapshot.data as int) +
-                                  (activeSnapshot.data as bool ? 500 : 0) +
-                                  (sunnySnapshot.data as bool ? 500 : 0);
-                            }
-                            return HomescreenMain(
-                              onAdd: widget.onAdd,
-                              drinkAmounts: widget.drinksAmounts,
-                              prevAmount: prevAmount,
-                              prevIntake: usePrevIntake,
-                              snapshot: snapshot,
-                              activeSnapshot: activeSnapshot,
-                              sunnySnapshot: sunnySnapshot,
-                              activeIntakeChange: activeIntakeChange,
-                              sunnyIntakeChange: sunnyIntakeChange,
-                              todaysDrinkAmount: todaysDrinkAmount,
-                            );
-                          }
-                      }
-                    });
-              });
-        },
-      )),
-    );
+        body: Center(
+          child: HomescreenMain(
+            activeUnit: widget.activeUnit,
+            loadPreferences: widget.loadPreferences,
+            onAdd: widget.onAdd,
+            drinkAmounts: widget.drinksAmounts,
+            prevAmount: prevAmount,
+            prevIntake: usePrevIntake,
+            intakeAmount: widget.intakeAmount,
+            isActive: widget.isActive,
+            isSunny: widget.isSunny,
+            activeIntakeChange: activeIntakeChange,
+            sunnyIntakeChange: sunnyIntakeChange,
+            todaysDrinkAmount: todaysDrinkAmount,
+          ),
+        ));
   }
 }

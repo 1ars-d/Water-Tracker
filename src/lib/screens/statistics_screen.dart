@@ -9,30 +9,21 @@ import '../models/DrinkAmount.dart';
 class StatisticsScreen extends StatefulWidget {
   static const routeName = "/statistics";
   final List<DrinkAmount> drinksAmounts;
+  final String activeUnit;
+  final int intakeAmount;
 
-  StatisticsScreen({required this.drinksAmounts, Key? key}) : super(key: key);
+  const StatisticsScreen(
+      {required this.intakeAmount,
+      required this.activeUnit,
+      required this.drinksAmounts,
+      Key? key})
+      : super(key: key);
 
   @override
   State<StatisticsScreen> createState() => _StatisticsScreenState();
 }
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-
-  late Future<String> activeUnit;
-  late Future<int> intakeAmount;
-
-  @override
-  void initState() {
-    activeUnit = _prefs.then((SharedPreferences prefs) {
-      return prefs.getString('unit') ?? "";
-    });
-    intakeAmount = _prefs.then((SharedPreferences prefs) {
-      return prefs.getInt('intake_amount') ?? 0;
-    });
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     List<int> data = [0, 0, 0, 0, 0, 0, 0];
@@ -66,49 +57,29 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
         child: Column(children: [
-          FutureBuilder<String>(
-            future: activeUnit,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.waiting) {
-                return FutureBuilder<int>(
-                  builder: (intakeContext, intakeSnapshot) {
-                    if (intakeSnapshot.connectionState !=
-                        ConnectionState.waiting) {
-                      return Container(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        color: Colors.white,
-                        child: Column(
-                          children: [
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              "Last Week",
-                              style: TextStyle(
-                                  fontSize: 22,
-                                  color: Theme.of(context).primaryColor),
-                            ),
-                            SizedBox(
-                              height: 230,
-                              child: StatisticsChart(
-                                data: data,
-                                intakeAmount: intakeSnapshot.data as int,
-                                activeUnit: snapshot.data as String,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    } else {
-                      return Container();
-                    }
-                  },
-                  future: intakeAmount,
-                );
-              }
-              return Container();
-            },
-            initialData: "ml",
+          Container(
+            padding: const EdgeInsets.only(bottom: 10),
+            color: Colors.white,
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  "Last Week",
+                  style: TextStyle(
+                      fontSize: 22, color: Theme.of(context).primaryColor),
+                ),
+                SizedBox(
+                  height: 230,
+                  child: StatisticsChart(
+                    data: data,
+                    intakeAmount: widget.intakeAmount,
+                    activeUnit: widget.activeUnit,
+                  ),
+                ),
+              ],
+            ),
           ),
           Expanded(child: HistoryList(drinkAmounts: widget.drinksAmounts))
         ]),

@@ -15,7 +15,7 @@ class DrinktypeSelector extends StatelessWidget {
     "tea": DrinkType.tea,
     "juice": DrinkType.juice,
     "soft drink": DrinkType.softDrink,
-    "milk": DrinkType.milk
+    "milk": DrinkType.milk,
   };
 
   static ColorFilter greyscale = const ColorFilter.matrix(<double>[
@@ -65,7 +65,7 @@ class DrinktypeSelector extends StatelessWidget {
                       alignment: Alignment.center,
                       width: 65,
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(100),
+                          borderRadius: BorderRadius.circular(20),
                           border: selectedDrink == entry.value
                               ? Border.all(
                                   color: selectedDrink == entry.value

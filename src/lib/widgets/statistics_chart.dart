@@ -25,7 +25,7 @@ class StatisticsChart extends StatelessWidget {
                         .toDouble() /
                     2)
         : max(
-            400,
+            100,
             data.reduce((curr, next) => curr > next ? curr : next).toDouble() +
                 data
                         .reduce((curr, next) => curr > next ? curr : next)
@@ -73,7 +73,7 @@ class StatisticsChart extends StatelessWidget {
                               height: 6,
                             ),
                             Text(
-                              "${parse_day(now.weekday)}.",
+                              "${parseDay(now.weekday)}.",
                               style: const TextStyle(
                                   color: Color.fromRGBO(0, 0, 0, 0.6)),
                             ),

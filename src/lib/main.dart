@@ -10,11 +10,13 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
 
+  //* Initialize Hive Database
+  await Hive.initFlutter();
   Hive.registerAdapter(DrinkAmountAdapter());
   await Hive.openBox<DrinkAmount>('drink_amounts');
 
+  //* Lock screen in portrait-mode
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   runApp(const MyApp());
@@ -28,15 +30,19 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  late Future<int> intakeAmount;
+  int _intakeAmount = 0;
+
+  void loadIntakeAmount() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _intakeAmount = (prefs.getInt('intake_amount') ?? -1);
+    });
+  }
 
   @override
   void initState() {
-    intakeAmount = _prefs.then((SharedPreferences prefs) {
-      return prefs.getInt('intake_amount') ?? 0;
-    });
     super.initState();
+    loadIntakeAmount();
   }
 
   @override
@@ -48,32 +54,20 @@ class _MyAppState extends State<MyApp> {
         systemNavigationBarIconBrightness: Brightness.dark));
 
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'Water Tracker',
       theme: ThemeData(
         textTheme: GoogleFonts.robotoFlexTextTheme(),
         splashFactory: InkRipple.splashFactory,
         primaryColor: const Color(0xff41C4FD),
         useMaterial3: true,
       ),
-      home: FutureBuilder<int>(
-          future: intakeAmount,
-          builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.waiting:
-                return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
-                );
-              default:
-                if (snapshot.data == 0) {
-                  return const WelcomeScreen();
-                } else {
-                  return const NavigationController(
-                    initIndex: 0,
-                  );
-                }
-            }
-          }),
-      onGenerateRoute: generate_routes,
+      home: _intakeAmount == -1
+          ? const WelcomeScreen()
+          : const NavigationController(
+              initIndex: 0,
+            ),
+      onGenerateRoute: generateRoutes,
     );
   }
 }

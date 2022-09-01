@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/boxes.dart';
+import 'package:src/helpers/helpers.dart';
 import 'package:src/models/DrinkAmount.dart';
+import 'package:src/screens/settings_screen.dart';
 import 'package:src/screens/welcome_screen.dart';
 import 'package:src/widgets/progress.dart';
 import 'package:src/widgets/recent_drinks.dart';
@@ -11,24 +13,28 @@ class HomescreenMain extends StatelessWidget {
   final List<DrinkAmount> drinkAmounts;
   final int prevAmount;
   final int prevIntake;
-  final AsyncSnapshot<int> snapshot;
-  final AsyncSnapshot<bool> activeSnapshot;
-  final AsyncSnapshot<bool> sunnySnapshot;
+  final int intakeAmount;
+  final bool isActive;
+  final bool isSunny;
   final Function sunnyIntakeChange;
   final Function activeIntakeChange;
   final Function onAdd;
+  final VoidCallback loadPreferences;
+  final String activeUnit;
 
   const HomescreenMain(
       {required this.prevAmount,
+      required this.activeUnit,
       required this.prevIntake,
-      required this.snapshot,
-      required this.activeSnapshot,
-      required this.sunnySnapshot,
+      required this.intakeAmount,
+      required this.isActive,
+      required this.isSunny,
       required this.onAdd,
       required this.activeIntakeChange,
       required this.sunnyIntakeChange,
       required this.todaysDrinkAmount,
       required this.drinkAmounts,
+      required this.loadPreferences,
       Key? key})
       : super(key: key);
 
@@ -42,25 +48,22 @@ class HomescreenMain extends StatelessWidget {
           child: AspectRatio(
             aspectRatio: 1,
             child: Progress(
+                activeUnit: activeUnit,
                 prevAmount: prevAmount,
                 prevIntake: prevIntake,
-                intakeAmount: int.parse(snapshot.data.toString()) +
-                    (sunnySnapshot.connectionState == ConnectionState.done &&
-                            sunnySnapshot.data as bool
-                        ? 500
-                        : 0) +
-                    (activeSnapshot.connectionState == ConnectionState.done &&
-                            activeSnapshot.data as bool
-                        ? 500
-                        : 0),
+                intakeAmount: int.parse(intakeAmount.toString()) +
+                    (isSunny ? getIntakeChangeDifference(activeUnit) : 0) +
+                    (isActive ? getIntakeChangeDifference(activeUnit) : 0),
                 todaysAmount: todaysDrinkAmount),
           ),
         ),
         TopActions(
-            sunny_snapshot: sunnySnapshot,
+            activeUnit: activeUnit,
+            loadPreferences: loadPreferences,
+            isSunny: isSunny,
             sunnyIntakeChange: sunnyIntakeChange,
-            snapshot: snapshot,
-            active_snapshot: activeSnapshot,
+            intakeAmount: intakeAmount,
+            isActive: isActive,
             activeIntakeChange: activeIntakeChange),
         Positioned(
           bottom: 50,
@@ -86,20 +89,24 @@ class HomescreenMain extends StatelessWidget {
 }
 
 class TopActions extends StatelessWidget {
+  final bool isSunny;
+  final bool isActive;
+  final int intakeAmount;
+  final Function sunnyIntakeChange;
+  final Function activeIntakeChange;
+  final VoidCallback loadPreferences;
+  final String activeUnit;
+
   const TopActions({
     Key? key,
-    required this.sunny_snapshot,
+    required this.isSunny,
+    required this.activeUnit,
     required this.sunnyIntakeChange,
-    required this.snapshot,
-    required this.active_snapshot,
+    required this.intakeAmount,
+    required this.isActive,
     required this.activeIntakeChange,
+    required this.loadPreferences,
   }) : super(key: key);
-
-  final AsyncSnapshot<bool> sunny_snapshot;
-  final Function sunnyIntakeChange;
-  final AsyncSnapshot<int> snapshot;
-  final AsyncSnapshot<bool> active_snapshot;
-  final Function activeIntakeChange;
 
   void clearData(context) async {
     final box = Boxes.getDrinkAmounts();
@@ -126,20 +133,20 @@ class TopActions extends StatelessWidget {
                 Container(
                     decoration: BoxDecoration(
                         border: Border.all(
-                            color: sunny_snapshot.connectionState ==
-                                        ConnectionState.done &&
-                                    sunny_snapshot.data as bool
-                                ? Colors.black38
-                                : Colors.transparent,
+                            color:
+                                isSunny ? Colors.black38 : Colors.transparent,
                             width: 3),
                         borderRadius: BorderRadius.circular(100),
                         color: Theme.of(context).primaryColor),
                     child: IconButton(
-                        onPressed: sunny_snapshot.connectionState ==
-                                ConnectionState.done
-                            ? () => sunnyIntakeChange(
-                                snapshot, active_snapshot, sunny_snapshot)
-                            : () {},
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                                'Water Intake: ${isSunny ? "-500" : "+500"}$activeUnit'),
+                            behavior: SnackBarBehavior.floating,
+                          ));
+                          sunnyIntakeChange(intakeAmount, isActive, isSunny);
+                        },
                         icon: const Icon(
                           Icons.sunny,
                           color: Colors.white,
@@ -150,20 +157,20 @@ class TopActions extends StatelessWidget {
                 Container(
                     decoration: BoxDecoration(
                         border: Border.all(
-                            color: active_snapshot.connectionState ==
-                                        ConnectionState.done &&
-                                    active_snapshot.data as bool
-                                ? Colors.black38
-                                : Colors.transparent,
+                            color:
+                                isActive ? Colors.black38 : Colors.transparent,
                             width: 3),
                         borderRadius: BorderRadius.circular(100),
                         color: Theme.of(context).primaryColor),
                     child: IconButton(
-                        onPressed: active_snapshot.connectionState ==
-                                ConnectionState.done
-                            ? () => activeIntakeChange(
-                                snapshot, sunny_snapshot, active_snapshot)
-                            : () {},
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                                'Water Intake: ${isActive ? "-500" : "+500"}$activeUnit'),
+                            behavior: SnackBarBehavior.floating,
+                          ));
+                          activeIntakeChange(intakeAmount, isSunny, isActive);
+                        },
                         icon: const Icon(
                           Icons.directions_bike_outlined,
                           color: Colors.white,
@@ -179,8 +186,13 @@ class TopActions extends StatelessWidget {
                 size: 30,
                 color: Color.fromRGBO(0, 0, 0, 0.5),
               ),
-              onPressed: () {
-                print("Hello");
+              onPressed: () async {
+                final bool result =
+                    await Navigator.pushNamed(context, SettingsScreen.routeName)
+                        as bool;
+                if (result) {
+                  loadPreferences();
+                }
               },
             ),
           ],

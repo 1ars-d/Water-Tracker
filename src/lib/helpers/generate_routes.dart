@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:src/screens/settings_screen.dart';
 import 'package:src/screens/setup_screen.dart';
 import 'package:src/screens/welcome_screen.dart';
 
@@ -7,8 +8,14 @@ import '../screens/home_screen.dart';
 import '../screens/navigation_controller.dart';
 import '../screens/statistics_screen.dart';
 
-Route<dynamic> generate_routes(settings) {
+Route<dynamic> generateRoutes(settings) {
   switch (settings.name) {
+    case SettingsScreen.routeName:
+      return PageTransition(
+        child: const SettingsScreen(),
+        type: PageTransitionType.rightToLeftWithFade,
+        settings: settings,
+      );
     case WelcomeScreen.routeName:
       return PageTransition(
         child: const WelcomeScreen(),

@@ -27,37 +27,8 @@ class WelcomeScreen extends StatelessWidget {
       style: TextStyle(color: Color.fromARGB(255, 110, 110, 110), fontSize: 16),
     );
 
-    final nextButton = ElevatedButton(
-        onPressed: () {
-          Navigator.pushNamed(context, SetupScreen.routeName);
-        },
-        style: ElevatedButton.styleFrom(
-            elevation: 10,
-            shadowColor: const Color.fromARGB(255, 4, 217, 255).withOpacity(.5),
-            primary: Theme.of(context).primaryColor,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20))),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text(
-              "Get Started",
-              style: TextStyle(
-                  fontSize: 19,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600),
-            ),
-            SizedBox(
-              width: 13,
-            ),
-            Icon(
-              Icons.arrow_forward_rounded,
-              color: Colors.white,
-            )
-          ],
-        ));
-
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         systemOverlayStyle: const SystemUiOverlayStyle(
@@ -70,21 +41,44 @@ class WelcomeScreen extends StatelessWidget {
         ),
         elevation: 0,
       ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.pushNamed(context, SetupScreen.routeName);
+          },
+          backgroundColor: Theme.of(context).primaryColor,
+          child: const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.white,
+          )),
       body: Container(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(),
               Container(
                 padding: const EdgeInsets.only(right: 10, left: 10),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SvgPicture.asset(
-                      "assets/IMG/welcome_screen.svg",
-                      height: 220,
+                    const Text(
+                      "Welcome",
+                      textAlign: TextAlign.start,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xff3F3D56),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 40,
+                    ),
+                    Container(
+                      alignment: Alignment.center,
+                      child: SvgPicture.asset(
+                        "assets/IMG/welcome_screen.svg",
+                        height: 240,
+                      ),
                     ),
                     const SizedBox(
                       height: 30,
@@ -97,11 +91,6 @@ class WelcomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  height: 55,
-                  width: double.infinity,
-                  child: nextButton),
             ],
           )),
     );

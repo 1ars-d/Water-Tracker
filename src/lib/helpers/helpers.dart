@@ -1,4 +1,10 @@
-String parse_day(weekday) {
+import 'package:flutter/cupertino.dart';
+import 'package:hive/hive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../models/DrinkAmount.dart';
+
+String parseDay(weekday) {
   if (weekday == DateTime.monday) {
     return "Mo";
   }
@@ -23,7 +29,7 @@ String parse_day(weekday) {
   return "";
 }
 
-String parse_month(int month) {
+String parseMonth(int month) {
   if (month == 1) {
     return "January";
   }
@@ -61,4 +67,63 @@ String parse_month(int month) {
     return "Dezember";
   }
   return "";
+}
+
+void onChangeUnit(prevUnit, newUnit, prefs) {
+  int currentIntakeAmount = prefs.getInt("intake_amount") ?? 0;
+  if (prevUnit == "ml" && newUnit == "oz UK") {
+    prefs.setInt("intake_amount", (currentIntakeAmount / 28.413).round());
+  }
+  if (prevUnit == "ml" && newUnit == "oz US") {
+    prefs.setInt("intake_amount", (currentIntakeAmount / 29.574).round());
+  }
+  if (prevUnit == "oz US" && newUnit == "oz UK") {
+    prefs.setInt("intake_amount", (currentIntakeAmount * 1.041).round());
+  }
+  if (prevUnit == "oz US" && newUnit == "ml") {
+    prefs.setInt("intake_amount", (currentIntakeAmount * 29.574).round());
+  }
+  if (prevUnit == "oz UK" && newUnit == "oz US") {
+    prefs.setInt("intake_amount", (currentIntakeAmount / 1.041).round());
+  }
+  if (prevUnit == "oz UK" && newUnit == "ml") {
+    prefs.setInt("intake_amount", (currentIntakeAmount * 28.413).round());
+  }
+
+  var box = Hive.box<DrinkAmount>("drink_amounts");
+  for (var key in box.keys) {
+    DrinkAmount drinkAmount = box.get(key) as DrinkAmount;
+    drinkAmount.unit = newUnit;
+    int newAmount = 0;
+    if (prevUnit == "ml" && newUnit == "oz UK") {
+      newAmount = (drinkAmount.amount / 28.413).round();
+    }
+    if (prevUnit == "ml" && newUnit == "oz US") {
+      newAmount = (drinkAmount.amount / 29.574).round();
+    }
+    if (prevUnit == "oz US" && newUnit == "oz UK") {
+      newAmount = (drinkAmount.amount * 1.041).round();
+    }
+    if (prevUnit == "oz US" && newUnit == "ml") {
+      newAmount = (drinkAmount.amount * 29.574).round();
+    }
+    if (prevUnit == "oz UK" && newUnit == "oz US") {
+      newAmount = (drinkAmount.amount / 1.041).round();
+    }
+    if (prevUnit == "oz UK" && newUnit == "ml") {
+      newAmount = (drinkAmount.amount * 28.413).round();
+    }
+    drinkAmount.amount = newAmount;
+    drinkAmount.save();
+  }
+}
+
+int getIntakeChangeDifference(activeUnit) {
+  if (activeUnit == "ml") {
+    return 500;
+  } else if (activeUnit == "oz UK") {
+    return 18;
+  } else {
+    return 17;
+  }
 }

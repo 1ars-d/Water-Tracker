@@ -10,9 +10,11 @@ class Progress extends StatefulWidget {
   final int todaysAmount;
   final int prevAmount;
   final int prevIntake;
+  final String activeUnit;
 
   const Progress(
       {required this.prevIntake,
+      required this.activeUnit,
       required this.intakeAmount,
       required this.todaysAmount,
       required this.prevAmount,
@@ -25,17 +27,12 @@ class Progress extends StatefulWidget {
 
 class _ProgressState extends State<Progress>
     with SingleTickerProviderStateMixin {
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-
   late AnimationController _animationController;
   late Animation _animationTween;
 
   @override
   void initState() {
     super.initState();
-    activeUnit = _prefs.then((SharedPreferences prefs) {
-      return prefs.getString('unit') ?? "";
-    });
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -55,12 +52,7 @@ class _ProgressState extends State<Progress>
     super.dispose();
   }
 
-  bool show_shadow = false;
-
-  int _currentGoal = 2000;
-
-  late Future<String> activeUnit;
-
+  bool shadowColor = false;
   @override
   Widget build(BuildContext context) {
     if (widget.todaysAmount >= widget.intakeAmount) {
@@ -167,22 +159,10 @@ class _ProgressState extends State<Progress>
                                   color: Theme.of(context).primaryColor,
                                   fontSize: 17),
                             ),
-                            FutureBuilder<String>(
-                                future: activeUnit,
-                                builder: (ctx, snapshot) {
-                                  if (snapshot.connectionState !=
-                                      ConnectionState.waiting) {
-                                    return Text(
-                                      ' / ${widget.intakeAmount.toString()}${snapshot.data}',
-                                      style: const TextStyle(fontSize: 17),
-                                    );
-                                  } else {
-                                    return Text(
-                                      ' / ${widget.intakeAmount.toString()}ml',
-                                      style: const TextStyle(fontSize: 17),
-                                    );
-                                  }
-                                })
+                            Text(
+                              ' / ${widget.intakeAmount.toString()}${widget.activeUnit}',
+                              style: const TextStyle(fontSize: 17),
+                            ),
                           ],
                         )
                       ],

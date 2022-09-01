@@ -10,8 +10,17 @@ class NavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 10,
+      /* shape: const AutomaticNotchedShape(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(0),
+          ),
+        ),
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+      ),
+      notchMargin: 7, */
       child: SizedBox(
         height: 70,
         child: Row(

@@ -1,4 +1,3 @@
-import 'package:src/helpers/calculate_intake.dart';
 import 'package:hive/hive.dart';
 
 part 'DrinkAmount.g.dart';
