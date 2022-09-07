@@ -187,7 +187,7 @@ class _SetupScreenState extends State<SetupScreen> {
                       ),
                     ),
                     style: const TextStyle(
-                        color: Colors.black87, fontWeight: FontWeight.w100),
+                        color: Colors.black87, fontWeight: FontWeight.normal),
                     controller: weightController,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
@@ -271,6 +271,14 @@ class _SetupScreenState extends State<SetupScreen> {
                   style: TextStyle(fontSize: 18, color: Color(0xFF3B3B3B)),
                 ),
               ],
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            const Text(
+              "Your weight and age are only used for the calculation and will not be saved.",
+              style:
+                  TextStyle(fontSize: 13, color: Color.fromRGBO(0, 0, 0, 0.5)),
             )
           ],
         ));

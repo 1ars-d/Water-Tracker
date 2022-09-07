@@ -1,6 +1,7 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:math';
+
 import 'package:hive/hive.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:src/helpers/calculate_intake.dart';
 
 import '../models/DrinkAmount.dart';
 
@@ -72,22 +73,28 @@ String parseMonth(int month) {
 void onChangeUnit(prevUnit, newUnit, prefs) {
   int currentIntakeAmount = prefs.getInt("intake_amount") ?? 0;
   if (prevUnit == "ml" && newUnit == "oz UK") {
-    prefs.setInt("intake_amount", (currentIntakeAmount / 28.413).round());
+    prefs.setInt(
+        "intake_amount", max((currentIntakeAmount / 28.413).round(), 5));
   }
   if (prevUnit == "ml" && newUnit == "oz US") {
-    prefs.setInt("intake_amount", (currentIntakeAmount / 29.574).round());
+    prefs.setInt(
+        "intake_amount", max(5, (currentIntakeAmount / 29.574).round()));
   }
   if (prevUnit == "oz US" && newUnit == "oz UK") {
-    prefs.setInt("intake_amount", (currentIntakeAmount * 1.041).round());
+    prefs.setInt(
+        "intake_amount", max(5, (currentIntakeAmount * 1.041).round()));
   }
   if (prevUnit == "oz US" && newUnit == "ml") {
-    prefs.setInt("intake_amount", (currentIntakeAmount * 29.574).round());
+    prefs.setInt(
+        "intake_amount", max(100, (currentIntakeAmount * 29.574).round()));
   }
   if (prevUnit == "oz UK" && newUnit == "oz US") {
-    prefs.setInt("intake_amount", (currentIntakeAmount / 1.041).round());
+    prefs.setInt(
+        "intake_amount", max(5, (currentIntakeAmount / 1.041).round()));
   }
   if (prevUnit == "oz UK" && newUnit == "ml") {
-    prefs.setInt("intake_amount", (currentIntakeAmount * 28.413).round());
+    prefs.setInt(
+        "intake_amount", max(100, (currentIntakeAmount * 28.413).round()));
   }
 
   var box = Hive.box<DrinkAmount>("drink_amounts");
@@ -96,22 +103,24 @@ void onChangeUnit(prevUnit, newUnit, prefs) {
     drinkAmount.unit = newUnit;
     int newAmount = 0;
     if (prevUnit == "ml" && newUnit == "oz UK") {
-      newAmount = (drinkAmount.amount / 28.413).round();
+      newAmount = max(5, (drinkAmount.amount / 28.413).round());
     }
     if (prevUnit == "ml" && newUnit == "oz US") {
-      newAmount = (drinkAmount.amount / 29.574).round();
+      newAmount = max(5, (drinkAmount.amount / 29.574).round());
     }
     if (prevUnit == "oz US" && newUnit == "oz UK") {
-      newAmount = (drinkAmount.amount * 1.041).round();
+      newAmount = max(5, (drinkAmount.amount * 1.041).round());
     }
     if (prevUnit == "oz US" && newUnit == "ml") {
-      newAmount = (drinkAmount.amount * 29.574).round();
+      newAmount = max(100, (drinkAmount.amount * 29.574).round());
+      newAmount = (newAmount / 50).round() * 50;
     }
     if (prevUnit == "oz UK" && newUnit == "oz US") {
-      newAmount = (drinkAmount.amount / 1.041).round();
+      newAmount = max(5, (drinkAmount.amount / 1.041).round());
     }
     if (prevUnit == "oz UK" && newUnit == "ml") {
-      newAmount = (drinkAmount.amount * 28.413).round();
+      newAmount = max(100, (drinkAmount.amount * 28.413).round());
+      newAmount = (newAmount / 50).round() * 50;
     }
     drinkAmount.amount = newAmount;
     drinkAmount.save();
@@ -126,4 +135,31 @@ int getIntakeChangeDifference(activeUnit) {
   } else {
     return 17;
   }
+}
+
+double getDrinkFactor(String drinkType) {
+  if (drinkType == DrinkType.water.name) {
+    return 1;
+  }
+  if (drinkType == DrinkType.coffee.name || drinkType == DrinkType.tea.name) {
+    return 0.99;
+  }
+  if (drinkType == DrinkType.milk.name) {
+    return 0.89;
+  }
+  if (drinkType == DrinkType.juice.name ||
+      drinkType == DrinkType.softDrink.name) {
+    return 0.92;
+  }
+  return 1;
+}
+
+int getDaysInMonth(int month) {
+  if (month == 2) {
+    return 28;
+  }
+  if (month % 2 == 0) {
+    return 30;
+  }
+  return 31;
 }

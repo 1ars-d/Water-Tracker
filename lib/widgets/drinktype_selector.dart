@@ -45,64 +45,71 @@ class DrinktypeSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: MediaQuery.of(context).size.width - 40,
-      height: 105,
+      height: 125,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: drinks.entries.map((entry) {
-          return InkWell(
-            splashColor: Theme.of(context).primaryColor.withAlpha(50),
-            borderRadius: BorderRadius.circular(10),
-            onTap: () => setSelectedDrink(entry.value),
-            child: Container(
-              padding: const EdgeInsets.only(right: 8, left: 8, top: 6),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                      padding: const EdgeInsets.all(11),
-                      height: 65,
-                      alignment: Alignment.center,
-                      width: 65,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          border: selectedDrink == entry.value
-                              ? Border.all(
-                                  color: selectedDrink == entry.value
-                                      ? Theme.of(context).primaryColor
-                                      : const Color.fromRGBO(0, 0, 0, 0.2),
-                                  width: selectedDrink == entry.value ? 3 : 3)
-                              : Border.all(
-                                  width: 3, color: Colors.transparent)),
-                      child: selectedDrink == entry.value
-                          ? entry.value == DrinkType.softDrink
-                              ? const Image(
-                                  image:
-                                      AssetImage("assets/IMG/soft_drink.png"))
-                              : Image(
-                                  image:
-                                      AssetImage("assets/IMG/${entry.key}.png"))
-                          : ColorFiltered(
-                              colorFilter: greyscale,
-                              child: entry.value == DrinkType.softDrink
+          return Container(
+            margin:
+                const EdgeInsets.only(top: 10, bottom: 14, right: 5, left: 5),
+            decoration: BoxDecoration(
+              border: selectedDrink == entry.value
+                  ? Border.all(
+                      color: selectedDrink == entry.value
+                          ? Theme.of(context).primaryColor
+                          : const Color.fromRGBO(0, 0, 0, 0.2),
+                      width: selectedDrink == entry.value ? 3 : 3)
+                  : Border.all(width: 3, color: Colors.transparent),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Material(
+              color: Colors.white,
+              elevation: 8,
+              shadowColor: Colors.black38,
+              borderRadius: BorderRadius.circular(10),
+              child: InkWell(
+                splashColor: Theme.of(context).primaryColor.withAlpha(50),
+                borderRadius: BorderRadius.circular(7),
+                onTap: () => setSelectedDrink(entry.value),
+                child: Container(
+                  padding: const EdgeInsets.only(right: 8, left: 8, top: 6),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                          padding: const EdgeInsets.all(8),
+                          height: 60,
+                          alignment: Alignment.center,
+                          width: 60,
+                          child: selectedDrink == entry.value
+                              ? entry.value == DrinkType.softDrink
                                   ? const Image(
                                       image: AssetImage(
-                                          "assets/IMG/soft_drink.png"))
+                                          "assets/images/beverages/soft_drink.png"))
                                   : Image(
                                       image: AssetImage(
-                                          "assets/IMG/${entry.key}.png")),
-                            )),
-                  const SizedBox(
-                    height: 4,
+                                          "assets/images/beverages/${entry.key}.png"))
+                              : ColorFiltered(
+                                  colorFilter: greyscale,
+                                  child: entry.value == DrinkType.softDrink
+                                      ? const Image(
+                                          image: AssetImage(
+                                              "assets/images/beverages/soft_drink.png"))
+                                      : Image(
+                                          image: AssetImage(
+                                              "assets/images/beverages/${entry.key}.png")),
+                                )),
+                      Text(
+                        entry.key,
+                        style: TextStyle(
+                            color: selectedDrink == entry.value
+                                ? Theme.of(context).primaryColor
+                                : const Color.fromRGBO(0, 0, 0, 0.4)),
+                      ),
+                    ],
                   ),
-                  Text(
-                    entry.key,
-                    style: TextStyle(
-                        color: selectedDrink == entry.value
-                            ? Theme.of(context).primaryColor
-                            : const Color.fromRGBO(0, 0, 0, 0.4)),
-                  ),
-                ],
+                ),
               ),
             ),
           );

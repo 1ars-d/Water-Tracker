@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:focused_menu/focused_menu.dart';
-import 'package:focused_menu/modals.dart';
 import 'package:src/models/DrinkAmount.dart';
 import '../boxes.dart';
 import '../helpers/helpers.dart';
@@ -15,7 +13,7 @@ class HistoryList extends StatelessWidget {
         date.year == DateTime.now().year) {
       return "Today";
     }
-    return '${date.day} ${parseMonth(date.month)} (${parseDay(date.weekday)}.)';
+    return '${date.day} ${parseMonth(date.month)} ${date.year != DateTime.now().year ? date.year : ""} (${parseDay(date.weekday)}.)';
   }
 
   void showDeleteDialog(context, amount) {
@@ -115,6 +113,14 @@ class HistoryList extends StatelessWidget {
                       .map((DrinkAmount amount) => Material(
                             color: Colors.white,
                             child: InkWell(
+                              onTap: () {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(const SnackBar(
+                                  content: Text(
+                                      "Press longer on an entry to delete it"),
+                                  behavior: SnackBarBehavior.floating,
+                                ));
+                              },
                               onLongPress: () =>
                                   showDeleteDialog(context, amount),
                               child: Container(
@@ -156,12 +162,12 @@ class HistoryList extends StatelessWidget {
                                           amount.drinkType == "softDrink"
                                               ? const Image(
                                                   image: AssetImage(
-                                                      "assets/IMG/soft_drink.png"),
+                                                      "assets/images/beverages/soft_drink.png"),
                                                   height: 25,
                                                 )
                                               : Image(
                                                   image: AssetImage(
-                                                      "assets/IMG/${amount.drinkType}.png"),
+                                                      "assets/images/beverages/${amount.drinkType}.png"),
                                                   height: 25,
                                                 ),
                                           const SizedBox(width: 15),

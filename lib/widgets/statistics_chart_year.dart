@@ -4,11 +4,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:src/helpers/helpers.dart';
 
-class StatisticsChart extends StatelessWidget {
+class StatisticsChartYear extends StatelessWidget {
   final int intakeAmount;
   final String activeUnit;
   final List<int> data;
-  const StatisticsChart(
+  const StatisticsChartYear(
       {required this.activeUnit,
       required this.data,
       required this.intakeAmount,
@@ -41,10 +41,22 @@ class StatisticsChart extends StatelessWidget {
     ];
 
     return Container(
-      padding: const EdgeInsets.only(right: 25, top: 15, left: 10),
+      padding: const EdgeInsets.only(right: 25, top: 0, left: 10),
       child: LineChart(LineChartData(
           titlesData: FlTitlesData(
-              topTitles: AxisTitles(),
+              topTitles: AxisTitles(
+                axisNameSize: 40,
+                axisNameWidget: Container(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    "Daily Average",
+                    style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ),
               rightTitles: AxisTitles(),
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
@@ -72,15 +84,20 @@ class StatisticsChart extends StatelessWidget {
                       interval: 1,
                       reservedSize: 30,
                       getTitlesWidget: (value, _) {
+                        if (value % 2 == 0) {
+                          return Container();
+                        }
                         DateTime now = DateTime.now();
-                        now = now.subtract(Duration(days: 6 - value.toInt()));
+                        now = now.subtract(Duration(
+                            days: now.day - 1 + 31 * (11 - value.round())));
                         return Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             const SizedBox(
                               height: 6,
                             ),
                             Text(
-                              "${parseDay(now.weekday)}.",
+                              parseMonth(now.month).substring(0, 3),
                               style: const TextStyle(
                                   color: Color.fromRGBO(0, 0, 0, 0.6)),
                             ),
@@ -106,7 +123,7 @@ class StatisticsChart extends StatelessWidget {
                 );
               }),
           minX: 0,
-          maxX: 6,
+          maxX: 11,
           minY: 0,
           maxY: calculateMaxY(activeUnit),
           lineBarsData: [
@@ -119,14 +136,19 @@ class StatisticsChart extends StatelessWidget {
                   FlSpot(3, intakeAmount.toDouble()),
                   FlSpot(4, intakeAmount.toDouble()),
                   FlSpot(5, intakeAmount.toDouble()),
-                  FlSpot(6, intakeAmount.toDouble())
+                  FlSpot(6, intakeAmount.toDouble()),
+                  FlSpot(7, intakeAmount.toDouble()),
+                  FlSpot(8, intakeAmount.toDouble()),
+                  FlSpot(9, intakeAmount.toDouble()),
+                  FlSpot(10, intakeAmount.toDouble()),
+                  FlSpot(11, intakeAmount.toDouble()),
                 ],
                 dotData: FlDotData(show: false)),
             LineChartBarData(
                 spots: data
                     .asMap()
                     .entries
-                    .map((e) => FlSpot(e.key.toDouble(), e.value.toDouble()))
+                    .map((e) => FlSpot(e.key.toDouble(), (e.value).toDouble()))
                     .toList(),
                 isCurved: false,
                 belowBarData: BarAreaData(

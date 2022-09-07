@@ -83,23 +83,23 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void sunnyIntakeChange(snapshot, activeSnapshot, sunnySnapshot) {
+  void sunnyIntakeChange(intakeAmount, isActive, isSunny) {
     int intakeChangeDifference = getIntakeChangeDifference(widget.activeUnit);
     setState(() {
-      if (activeSnapshot) {
-        if (sunnySnapshot) {
-          prevIntake = (snapshot) + intakeChangeDifference * 2;
+      if (isActive) {
+        if (isSunny) {
+          prevIntake = (intakeAmount) + intakeChangeDifference * 2;
         } else {
-          prevIntake = (snapshot) + intakeChangeDifference;
+          prevIntake = (intakeAmount) + intakeChangeDifference;
         }
       } else {
-        if (sunnySnapshot) {
-          prevIntake = (snapshot) + intakeChangeDifference;
+        if (isSunny) {
+          prevIntake = (intakeAmount) + intakeChangeDifference;
         } else {
-          prevIntake = (snapshot);
+          prevIntake = (intakeAmount);
         }
       }
-      setSunny(!(sunnySnapshot));
+      setSunny(!(isSunny));
     });
   }
 
@@ -114,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (element.createdDate.year == DateTime.now().year &&
           element.createdDate.month == DateTime.now().month &&
           element.createdDate.day == DateTime.now().day) {
-        return element.amount;
+        return (element.amount * getDrinkFactor(element.drinkType)).round();
       } else {
         return 0;
       }
@@ -144,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
           toolbarHeight: 0,
           systemOverlayStyle: const SystemUiOverlayStyle(
             // Status bar color
-            statusBarColor: Color.fromRGBO(0, 0, 0, 0.02),
+            statusBarColor: Colors.transparent,
 
             // Status bar brightness (optional)
             statusBarIconBrightness:

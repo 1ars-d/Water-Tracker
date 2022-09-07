@@ -14,10 +14,10 @@ class WelcomeScreen extends StatelessWidget {
     Widget title = Text(
       "Track your water intake & improve your health",
       textAlign: TextAlign.start,
-      style: GoogleFonts.robotoSlab(
+      style: GoogleFonts.robotoFlex(
         color: const Color(0xff43AAD7),
-        fontSize: 24,
-        fontWeight: FontWeight.w400,
+        fontSize: 26,
+        fontWeight: FontWeight.bold,
       ),
     );
 
@@ -40,6 +40,7 @@ class WelcomeScreen extends StatelessWidget {
           statusBarBrightness: Brightness.light, // For iOS (dark icons)
         ),
         elevation: 0,
+        toolbarHeight: 10,
       ),
       floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -54,7 +55,7 @@ class WelcomeScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 padding: const EdgeInsets.only(right: 10, left: 10),
@@ -76,7 +77,7 @@ class WelcomeScreen extends StatelessWidget {
                     Container(
                       alignment: Alignment.center,
                       child: SvgPicture.asset(
-                        "assets/IMG/welcome_screen.svg",
+                        "assets/images/others/welcome_screen.svg",
                         height: 240,
                       ),
                     ),
@@ -91,6 +92,7 @@ class WelcomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(),
             ],
           )),
     );

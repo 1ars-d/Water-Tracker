@@ -54,6 +54,7 @@ class _MyAppState extends State<MyApp> {
         systemNavigationBarIconBrightness: Brightness.dark));
 
     return MaterialApp(
+      color: Colors.white,
       debugShowCheckedModeBanner: false,
       title: 'Water Tracker',
       theme: ThemeData(

@@ -102,7 +102,7 @@ class _CalculateDialogState extends State<CalculateDialog> {
                       ),
                     ),
                     style: const TextStyle(
-                        color: Colors.black87, fontWeight: FontWeight.w100),
+                        color: Colors.black87, fontWeight: FontWeight.normal),
                     controller: weightController,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),

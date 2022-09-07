@@ -35,6 +35,7 @@ class AddModalState extends State<AddModal> {
   void initState() {
     super.initState();
     loadActiveUnit();
+    _currentAmount = activeUnit == "ml" ? 200 : 10;
   }
 
   void setSelectedDrink(newDrink) {
@@ -88,7 +89,13 @@ class AddModalState extends State<AddModal> {
                               height: 50,
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(13),
-                                  color: const Color.fromRGBO(0, 0, 0, 0.05)),
+                                  color: Colors.white,
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        color: Color.fromRGBO(0, 0, 0, 0.14),
+                                        blurRadius: 10,
+                                        offset: Offset(1, 1))
+                                  ]),
                               child: Row(children: [
                                 Expanded(
                                   flex: 1,
@@ -137,14 +144,19 @@ class AddModalState extends State<AddModal> {
                                             }
                                           });
                                         },
-                                        child: Text((activeDate.day ==
-                                                    DateTime.now().day &&
-                                                activeDate.month ==
-                                                    DateTime.now().month &&
-                                                activeDate.year ==
-                                                    DateTime.now().year)
-                                            ? "Today"
-                                            : '${activeDate.day.toString()}/${activeDate.month.toString()}/${activeDate.year.toString()}'),
+                                        child: Text(
+                                            (activeDate.day ==
+                                                        DateTime.now().day &&
+                                                    activeDate.month ==
+                                                        DateTime.now().month &&
+                                                    activeDate.year ==
+                                                        DateTime.now().year)
+                                                ? "Today"
+                                                : '${activeDate.day.toString()}/${activeDate.month.toString()}/${activeDate.year.toString()}',
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.normal,
+                                                color: Color.fromRGBO(
+                                                    0, 0, 0, 0.7))),
                                       ),
                                     ))
                               ]),
@@ -158,8 +170,14 @@ class AddModalState extends State<AddModal> {
                               child: Container(
                                 height: 50,
                                 decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    color: const Color.fromRGBO(0, 0, 0, 0.05)),
+                                    borderRadius: BorderRadius.circular(13),
+                                    color: Colors.white,
+                                    boxShadow: const [
+                                      BoxShadow(
+                                          color: Color.fromRGBO(0, 0, 0, 0.14),
+                                          blurRadius: 10,
+                                          offset: Offset(1, 1))
+                                    ]),
                                 child: TextButton(
                                   style: TextButton.styleFrom(
                                       padding: const EdgeInsets.all(0),
@@ -181,7 +199,10 @@ class AddModalState extends State<AddModal> {
                                     });
                                   },
                                   child: Text(
-                                      '${activeTime.hour}:${activeTime.minute}'),
+                                      '${activeTime.hour}:${activeTime.minute.toString().length < 2 ? "0${activeTime.minute}" : activeTime.minute}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.normal,
+                                          color: Color.fromRGBO(0, 0, 0, 0.7))),
                                 ),
                               ))
                         ],
@@ -199,7 +220,7 @@ class AddModalState extends State<AddModal> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               NumberPicker(
-                                  minValue: 0,
+                                  minValue: activeUnit == "ml" ? 10 : 5,
                                   maxValue: 10000,
                                   itemHeight: 50,
                                   textStyle: const TextStyle(
@@ -219,7 +240,7 @@ class AddModalState extends State<AddModal> {
                                               color: Theme.of(context)
                                                   .primaryColor))),
                                   value: _currentAmount,
-                                  step: activeUnit == "ml" ? 50 : 5,
+                                  step: activeUnit == "ml" ? 10 : 5,
                                   haptics: true,
                                   onChanged: (value) {
                                     setState(() {

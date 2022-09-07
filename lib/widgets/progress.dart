@@ -2,8 +2,7 @@ import 'dart:math';
 
 import 'package:countup/countup.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:syncfusion_flutter_gauges/gauges.dart';
+import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
 
 class Progress extends StatefulWidget {
   final int intakeAmount;
@@ -28,22 +27,47 @@ class Progress extends StatefulWidget {
 class _ProgressState extends State<Progress>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late Animation _animationTween;
+  late Tween<double> valueTween;
+  late Animation<double> curve;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    _animationTween = ColorTween(
-            begin: const Color.fromRGBO(0, 0, 0, 0.07),
-            end: const Color.fromARGB(255, 4, 217, 255).withOpacity(.3))
-        .animate(_animationController);
-    _animationController.addListener(() {
-      setState(() {});
-    });
+    curve = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+    valueTween = Tween<double>(
+      begin: 0,
+      end: widget.todaysAmount / widget.intakeAmount,
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void didUpdateWidget(Progress oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.todaysAmount / widget.intakeAmount !=
+        oldWidget.todaysAmount / oldWidget.intakeAmount) {
+      // Try to start with the previous tween's end value. This ensures that we
+      // have a smooth transition from where the previous animation reached.
+      double beginValue = valueTween.evaluate(curve);
+
+      // Update the value tween.
+      valueTween = Tween<double>(
+        begin: beginValue,
+        end: widget.todaysAmount / widget.intakeAmount,
+      );
+
+      _animationController
+        ..value = 0
+        ..forward();
+    }
   }
 
   @override
@@ -52,130 +76,84 @@ class _ProgressState extends State<Progress>
     super.dispose();
   }
 
-  bool shadowColor = false;
   @override
   Widget build(BuildContext context) {
-    if (widget.todaysAmount >= widget.intakeAmount) {
-      _animationController.forward();
-    } else {
-      _animationController.reverse();
-    }
     int usePrevIntake =
         widget.prevIntake > 0 ? widget.prevIntake : widget.intakeAmount;
-    return SizedBox(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      child: Container(
-        width: 100,
-        height: 100,
-        padding: const EdgeInsets.all(20.0),
-        child: SfRadialGauge(
-          enableLoadingAnimation: true,
-          axes: <RadialAxis>[
-            RadialAxis(
-              axisLineStyle: const AxisLineStyle(
-                  thickness: 0.05,
-                  color: Color.fromRGBO(0, 0, 0, 0.1),
-                  thicknessUnit: GaugeSizeUnit.factor,
-                  cornerStyle: CornerStyle.bothCurve),
-              showTicks: false,
-              showLabels: false,
-              onAxisTapped: (value) {},
-              pointers: <GaugePointer>[
-                RangePointer(
-                    gradient: SweepGradient(colors: [
-                      Theme.of(context).primaryColor,
-                      const Color.fromARGB(255, 74, 213, 255)
-                    ]),
-                    enableAnimation: true,
-                    animationType: AnimationType.ease,
-                    animationDuration: 1000,
-                    color: Theme.of(context).primaryColor,
-                    value: widget.todaysAmount / widget.intakeAmount * 100,
-                    onValueChanged: (value) {},
-                    cornerStyle: CornerStyle.bothCurve,
-                    onValueChangeEnd: (value) {},
-                    onValueChanging: (value) {},
-                    enableDragging: true,
-                    width: 0.05,
-                    sizeUnit: GaugeSizeUnit.factor)
-              ],
-              annotations: <GaugeAnnotation>[
-                GaugeAnnotation(
-                  widget: Container(
-                    margin: const EdgeInsets.all(40),
-                    padding: const EdgeInsets.only(bottom: 15),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(800),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _animationTween.value,
-                            blurRadius: 52,
-                          )
-                        ]),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Container(
-                              color: Colors.transparent,
-                              height: 85,
-                              child: Countup(
-                                begin: min(
-                                    widget.prevAmount / usePrevIntake * 100,
-                                    100),
-                                end: min(
-                                    widget.todaysAmount /
-                                        widget.intakeAmount *
-                                        100,
-                                    100),
-                                duration: const Duration(milliseconds: 800),
-                                style: TextStyle(
-                                    color: Theme.of(context).primaryColor,
-                                    fontSize: 64,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            Text(
-                              "%",
-                              style: TextStyle(
-                                  fontSize: 30,
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                          ],
+    return AnimatedBuilder(
+      animation: curve,
+      builder: (BuildContext context, _) {
+        return Container(
+            decoration: BoxDecoration(boxShadow: const [
+              BoxShadow(
+                  color: Color.fromRGBO(0, 0, 0, 0.07),
+                  blurRadius: 20,
+                  spreadRadius: 0,
+                  offset: Offset(0, 10))
+            ], borderRadius: BorderRadius.circular(1000)),
+            margin: const EdgeInsets.all(30.0),
+            child: LiquidCircularProgressIndicator(
+              valueColor:
+                  AlwaysStoppedAnimation(Theme.of(context).primaryColor),
+              /* borderColor: Colors.black12,
+              borderWidth: 1, */
+              backgroundColor: Colors.white,
+              value: valueTween.evaluate(curve),
+              center: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 85,
+                        child: Countup(
+                          begin:
+                              min(widget.prevAmount / usePrevIntake * 100, 100),
+                          end: min(
+                              widget.todaysAmount / widget.intakeAmount * 100,
+                              100),
+                          duration: const Duration(milliseconds: 800),
+                          style: TextStyle(
+                              color: widget.todaysAmount >= widget.intakeAmount
+                                  ? Colors.white
+                                  : const Color.fromARGB(255, 122, 215, 255),
+                              fontSize: 64,
+                              fontWeight: FontWeight.bold),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              widget.todaysAmount.toString(),
-                              style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontSize: 17),
-                            ),
-                            Text(
-                              ' / ${widget.intakeAmount.toString()}${widget.activeUnit}',
-                              style: const TextStyle(fontSize: 17),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
+                      ),
+                      Text(
+                        "%",
+                        style: TextStyle(
+                            fontSize: 30,
+                            color: widget.todaysAmount >= widget.intakeAmount
+                                ? Colors.white
+                                : const Color.fromARGB(255, 122, 215, 255),
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ],
                   ),
-                  positionFactor: .03,
-                  angle: 0.5,
-                )
-              ],
-            ),
-          ],
-        ),
-      ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.todaysAmount.toString(),
+                        style: const TextStyle(
+                            color: Colors.black26, fontSize: 17),
+                      ),
+                      Text(
+                        ' / ${widget.intakeAmount.toString()}${widget.activeUnit}',
+                        style: const TextStyle(
+                            fontSize: 17, color: Colors.black26),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ));
+      },
     );
   }
 }

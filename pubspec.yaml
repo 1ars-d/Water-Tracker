@@ -38,17 +38,17 @@ dependencies:
   google_fonts: ^3.0.1
   page_transition: ^2.0.9
   numberpicker: ^2.1.1
-  dropdown_button2: ^1.7.1
-  animated_bottom_navigation_bar: ^1.0.1
   shared_preferences: ^2.0.15
-  syncfusion_flutter_gauges: ^20.2.43
+  url_launcher: ^6.1.5
   countup: ^0.1.4
+  flutter_native_splash: ^2.0.5
+  flutter_svg: ^1.1.4
+  liquid_progress_indicator: ^0.4.0
 
   # hive database
   hive: ^2.0.3
   hive_flutter: ^1.0.0
   fl_chart: ^0.55.1
-  flutter_svg: ^1.1.4
 
 dev_dependencies:
   flutter_test:
@@ -68,9 +68,15 @@ dev_dependencies:
 flutter_icons:
   android: true
   apple: true
-  image_path: "assets/IMG/icon.png"
+  image_path: "assets/images/icons/icon.png"
   adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/IMG/icon_foreground.png"
+  adaptive_icon_foreground: assets/images/icons/icon_foreground.png
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/images/icons/splash_image.png
+  android_12:
+    image: assets/images/icon/splash_image.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -82,13 +88,13 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/IMG/water.png
-    - assets/IMG/tea.png
-    - assets/IMG/juice.png
-    - assets/IMG/soft_drink.png
-    - assets/IMG/coffee.png
-    - assets/IMG/milk.png
-    - assets/IMG/welcome_screen.svg
+    - assets/images/beverages/water.png
+    - assets/images/beverages/tea.png
+    - assets/images/beverages/juice.png
+    - assets/images/beverages/soft_drink.png
+    - assets/images/beverages/coffee.png
+    - assets/images/beverages/milk.png
+    - assets/images/others/welcome_screen.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

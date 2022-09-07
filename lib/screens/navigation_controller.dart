@@ -18,6 +18,7 @@ class NavigationController extends StatefulWidget {
 }
 
 class NavigationControllerState extends State<NavigationController> {
+  late PageController pageController;
   int activeIndex = 0;
   final iconsList = [Icons.apps, Icons.bar_chart];
   dynamic prevIsSunny;
@@ -61,15 +62,10 @@ class NavigationControllerState extends State<NavigationController> {
 
   @override
   void initState() {
+    pageController = PageController(initialPage: widget.initIndex);
     activeIndex = widget.initIndex;
     super.initState();
     loadPreferences();
-  }
-
-  void setPage(index) {
-    setState(() {
-      activeIndex = index;
-    });
   }
 
   void createModal() {
@@ -100,45 +96,51 @@ class NavigationControllerState extends State<NavigationController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: activeIndex,
-        children: [
-          ValueListenableBuilder<Box<DrinkAmount>>(
-              valueListenable: Boxes.getDrinkAmounts().listenable(),
-              builder: (context, box, _) {
-                final drinkAmounts = box.values.toList().cast<DrinkAmount>();
-                return HomeScreen(
-                  changeActive: changeActive,
-                  changeSunny: changeSunny,
-                  loadPreferences: loadPreferences,
-                  activeUnit: activeUnit,
-                  intakeAmount: intakeAmount,
-                  isSunny: isSunny,
-                  isActive: isActive,
-                  onAdd: onAdd,
-                  prevIsActive: prevIsActive,
-                  prevIsSunny: prevIsActive,
-                  setPrevIsActive: setPrevIsActive,
-                  setPrevIsSunny: setPrevIsSunny,
-                  drinksAmounts: drinkAmounts,
-                );
-              }),
-          ValueListenableBuilder<Box<DrinkAmount>>(
-              valueListenable: Boxes.getDrinkAmounts().listenable(),
-              builder: (context, box, _) {
-                final drinkAmounts = box.values.toList().cast<DrinkAmount>();
-                return StatisticsScreen(
-                  activeUnit: activeUnit,
-                  intakeAmount: intakeAmount,
-                  drinksAmounts: drinkAmounts,
-                );
-              })
-        ],
-      ),
+      body: PageView(
+          physics: const NeverScrollableScrollPhysics(),
+          onPageChanged: (newIndex) {
+            setState(() {
+              activeIndex = newIndex;
+            });
+          },
+          controller: pageController,
+          children: [
+            ValueListenableBuilder<Box<DrinkAmount>>(
+                valueListenable: Boxes.getDrinkAmounts().listenable(),
+                builder: (context, box, _) {
+                  final drinkAmounts = box.values.toList().cast<DrinkAmount>();
+                  return HomeScreen(
+                    changeActive: changeActive,
+                    changeSunny: changeSunny,
+                    loadPreferences: loadPreferences,
+                    activeUnit: activeUnit,
+                    intakeAmount: intakeAmount,
+                    isSunny: isSunny,
+                    isActive: isActive,
+                    onAdd: onAdd,
+                    prevIsActive: prevIsActive,
+                    prevIsSunny: prevIsActive,
+                    setPrevIsActive: setPrevIsActive,
+                    setPrevIsSunny: setPrevIsSunny,
+                    drinksAmounts: drinkAmounts,
+                  );
+                }),
+            ValueListenableBuilder<Box<DrinkAmount>>(
+                valueListenable: Boxes.getDrinkAmounts().listenable(),
+                builder: (context, box, _) {
+                  final drinkAmounts = box.values.toList().cast<DrinkAmount>();
+                  return StatisticsScreen(
+                    activeUnit: activeUnit,
+                    intakeAmount: intakeAmount,
+                    drinksAmounts: drinkAmounts,
+                  );
+                })
+          ]),
       floatingActionButton: SizedBox(
         height: 65,
         width: 65,
         child: FloatingActionButton(
+          elevation: 4,
           onPressed: createModal,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -153,7 +155,11 @@ class NavigationControllerState extends State<NavigationController> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: NavBar(
         activeIndex: activeIndex,
-        setPage: setPage,
+        setPage: (int newIndex) {
+          pageController.animateToPage(newIndex,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut);
+        },
       ),
     );
   }
