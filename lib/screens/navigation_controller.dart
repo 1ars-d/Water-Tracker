@@ -157,7 +157,7 @@ class NavigationControllerState extends State<NavigationController> {
         activeIndex: activeIndex,
         setPage: (int newIndex) {
           pageController.animateToPage(newIndex,
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 100),
               curve: Curves.easeInOut);
         },
       ),

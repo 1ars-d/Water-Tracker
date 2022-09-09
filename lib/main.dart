@@ -56,7 +56,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       color: Colors.white,
       debugShowCheckedModeBanner: false,
-      title: 'Water Tracker',
+      title: 'Minimal Water Tracker',
       theme: ThemeData(
         textTheme: GoogleFonts.robotoFlexTextTheme(),
         splashFactory: InkRipple.splashFactory,

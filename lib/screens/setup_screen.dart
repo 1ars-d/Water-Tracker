@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/helpers/calculate_intake.dart';
+import 'package:src/helpers/helpers.dart';
 import 'package:src/screens/home_screen.dart';
+import 'package:src/widgets/reminder_time_dialog.dart';
+import 'package:workmanager/workmanager.dart';
 
 import '../models/DrinkAmount.dart';
 
@@ -28,6 +32,11 @@ class _SetupScreenState extends State<SetupScreen> {
   int _currentGoal = 100;
   int activeTabIndex = 0;
   bool unitIsValid = true;
+
+  bool notificationsActive = false;
+  TimeOfDay selectedStartReminderTime = const TimeOfDay(hour: 9, minute: 0);
+  TimeOfDay selectedFinishReminderTime = const TimeOfDay(hour: 21, minute: 0);
+  int selectedReminderInterval = 1;
 
   @override
   void initState() {
@@ -75,12 +84,69 @@ class _SetupScreenState extends State<SetupScreen> {
     }
   }
 
+  void openReminderDialog(context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+            child: Container(
+                padding: const EdgeInsets.all(20),
+                child: ReminderTimeDialog(
+                  selectedReminderInterval: selectedReminderInterval,
+                  selectedFinishReminderTime: selectedFinishReminderTime,
+                  selectedStartReminderTime: selectedStartReminderTime,
+                  setEndTime: (TimeOfDay newTime) {
+                    setState(() {
+                      selectedFinishReminderTime = newTime;
+                    });
+                  },
+                  setStartTime: (TimeOfDay newTime) {
+                    setState(() {
+                      selectedStartReminderTime = newTime;
+                    });
+                  },
+                  setInterval: (int newInterval) {
+                    setState(() {
+                      selectedReminderInterval = newInterval;
+                    });
+                  },
+                )),
+          );
+        });
+  }
+
+  void setReminders(SharedPreferences prefs) async {
+    prefs.setBool("reminders_active", notificationsActive);
+    prefs.setInt("reminder_interval", selectedReminderInterval);
+    prefs.setString(
+        "reminder_start_time", formatTimeOfDay(selectedStartReminderTime));
+    prefs.setString(
+        "reminder_finish_time", formatTimeOfDay(selectedFinishReminderTime));
+    if (notificationsActive) {
+      await Workmanager().cancelAll();
+      await Workmanager()
+          .initialize(remindersCallbackDispatcher, isInDebugMode: true);
+      await Workmanager().registerPeriodicTask("reminder", "Reminder",
+          inputData: {
+            "start_hour": selectedStartReminderTime.hour,
+            "start_minute": selectedStartReminderTime.minute,
+            "finish_hour": selectedFinishReminderTime.hour,
+            "finish_minute": selectedFinishReminderTime.minute,
+            "init_time": TimeOfDay.now().toString(),
+          },
+          frequency: getDurationFromIntervalInt(selectedReminderInterval));
+    }
+  }
+
   void onSubmit() async {
     final prefs = await SharedPreferences.getInstance();
     if (validateUnit()) {
       final bool calculateiInputDataIsValid = validateWeight() && validateAge();
       if (activeTabIndex == 0 && calculateiInputDataIsValid) {
         prefs.setString("unit", activeUnit);
+        setReminders(prefs);
         prefs
             .setInt(
                 "intake_amount",
@@ -92,6 +158,7 @@ class _SetupScreenState extends State<SetupScreen> {
             .then((value) => Navigator.pushNamedAndRemoveUntil(
                 context, HomeScreen.routeName, (_) => false));
       } else if (activeTabIndex == 1) {
+        setReminders(prefs);
         prefs.setString("unit", activeUnit);
         prefs.setInt("intake_amount", _currentGoal).then((value) =>
             Navigator.pushNamedAndRemoveUntil(
@@ -357,10 +424,11 @@ class _SetupScreenState extends State<SetupScreen> {
           ],
         ),
         SizedBox(
-            height: 400,
-            child: TabBarView(
-                physics: const NeverScrollableScrollPhysics(),
-                children: [calculateSide, manualSide]))
+          height: 340,
+          child: TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
+              children: [calculateSide, manualSide]),
+        )
       ],
     );
 
@@ -389,38 +457,89 @@ class _SetupScreenState extends State<SetupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: SingleChildScrollView(
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Container(
+                    padding: const EdgeInsets.only(left: 20),
                     child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.only(left: 20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "Setup",
+                          style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff3F3D56)),
+                        ),
+                        Text(
+                          "Setup your weight and age to calculate your water intake, or choose it manually",
+                          style: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.6)),
+                        )
+                      ],
+                    ),
+                  ),
+                  unitSelection,
+                  tabBar,
+                  const Divider(
+                    height: 1,
+                    color: Colors.black26,
+                  ),
+                  SwitchListTile(
+                      controlAffinity: ListTileControlAffinity.leading,
+                      contentPadding:
+                          const EdgeInsets.only(left: 20, right: 20),
+                      activeColor: Theme.of(context).primaryColor,
+                      value: notificationsActive,
+                      title: const Text("Activate Reminders"),
+                      onChanged: (bool newValue) async {
+                        if (newValue) {
+                          if (await Permission.notification
+                              .request()
+                              .isGranted) {
+                            setState(() {
+                              notificationsActive = newValue;
+                            });
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text(
+                                        "Please allow notifications in settings for this app")));
+                          }
+                        } else {
+                          setState(() {
+                            notificationsActive = newValue;
+                          });
+                        }
+                      }),
+                  !notificationsActive
+                      ? Container()
+                      : SizedBox(
+                          width: double.infinity,
+                          child: InkWell(
+                            onTap: () {
+                              openReminderDialog(context);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(children: [
                                 Text(
-                                  "Setup",
-                                  style: TextStyle(
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xff3F3D56)),
+                                  "${formatTimeOfDay(selectedStartReminderTime)} - ${formatTimeOfDay(selectedFinishReminderTime)}",
+                                  style: const TextStyle(
+                                      color: Colors.black87, fontSize: 23),
                                 ),
                                 Text(
-                                  "Setup your weight and age to calculate your water intake, or choose it manually",
-                                  style: TextStyle(
-                                      color: Color.fromRGBO(0, 0, 0, 0.6)),
+                                  getReminderIntervalText(
+                                      selectedReminderInterval),
+                                  style: const TextStyle(
+                                      color: Colors.black54, fontSize: 12),
                                 )
-                              ],
+                              ]),
                             ),
                           ),
-                          unitSelection,
-                          tabBar,
-                        ]),
+                        ),
+                  const SizedBox(
+                    height: 100,
                   ),
-                ),
-                const SizedBox(),
+                ]),
               ],
             ),
           ),

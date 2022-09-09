@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:src/boxes.dart';
 import 'package:src/helpers/helpers.dart';
 import 'package:src/models/DrinkAmount.dart';
 import 'package:src/screens/about_screen.dart';
 import 'package:src/screens/settings_screen.dart';
-import 'package:src/screens/welcome_screen.dart';
 import 'package:src/widgets/progress.dart';
 import 'package:src/widgets/recent_drinks.dart';
 
@@ -215,10 +212,13 @@ class TopActions extends StatelessWidget {
             Container(
               alignment: Alignment.center,
               padding: const EdgeInsets.only(left: 10, top: 10, bottom: 10),
-              child: const Text(
-                "Today's Progress",
-                style: TextStyle(
-                    fontSize: 18, color: Color.fromRGBO(0, 0, 0, 0.75)),
+              child: const FittedBox(
+                fit: BoxFit.fitWidth,
+                child: Text(
+                  "Today's Progress",
+                  style: TextStyle(
+                      fontSize: 18, color: Color.fromRGBO(0, 0, 0, 0.75)),
+                ),
               ),
             ),
             Container(
@@ -227,6 +227,7 @@ class TopActions extends StatelessWidget {
               child: Theme(
                 data: Theme.of(context).copyWith(useMaterial3: false),
                 child: PopupMenuButton<String>(
+                  position: PopupMenuPosition.under,
                   elevation: 2,
                   onSelected: (String value) async {
                     switch (value) {

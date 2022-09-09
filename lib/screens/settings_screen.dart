@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/helpers/helpers.dart';
-import 'package:src/screens/about_screen.dart';
 import 'package:src/screens/welcome_screen.dart';
 import 'package:src/widgets/calculate_dialog.dart';
+import 'package:workmanager/workmanager.dart';
 
 import '../boxes.dart';
+import '../widgets/reminder_time_dialog.dart';
+import 'about_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   static const routeName = "/settings";
@@ -20,17 +23,89 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   String activeUnit = "";
-  int _currentGoal = 0;
+  int _currentGoal = 2000;
+
+  bool notificationsActive = false;
+  TimeOfDay selectedStartReminderTime = const TimeOfDay(hour: 9, minute: 0);
+  TimeOfDay selectedFinishReminderTime = const TimeOfDay(hour: 21, minute: 0);
+  int selectedReminderInterval = 1;
 
   bool unitIsExpanded = false;
   bool intakeIsExpanded = false;
+  bool remindersIsExpanded = false;
 
   void loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       activeUnit = prefs.getString("unit") ?? "";
-      _currentGoal = prefs.getInt("intake_amount") ?? 0;
+      notificationsActive = prefs.getBool("reminders_active") ?? false;
+      selectedStartReminderTime =
+          stringToTimeOfDay(prefs.getString("reminder_start_time") ?? "9:00");
+      selectedFinishReminderTime =
+          stringToTimeOfDay(prefs.getString("reminder_finish_time") ?? "21:00");
+      selectedReminderInterval = prefs.getInt("reminder_interval") ?? 1;
+      _currentGoal = prefs.getInt("intake_amount") ?? 2000;
     });
+  }
+
+  void openReminderDialog(context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+            child: Container(
+                padding: const EdgeInsets.all(20),
+                child: ReminderTimeDialog(
+                  selectedReminderInterval: selectedReminderInterval,
+                  selectedFinishReminderTime: selectedFinishReminderTime,
+                  selectedStartReminderTime: selectedStartReminderTime,
+                  setEndTime: (TimeOfDay newTime) {
+                    setState(() {
+                      selectedFinishReminderTime = newTime;
+                    });
+                  },
+                  setStartTime: (TimeOfDay newTime) {
+                    setState(() {
+                      selectedStartReminderTime = newTime;
+                    });
+                  },
+                  setInterval: (int newInterval) {
+                    setState(() {
+                      selectedReminderInterval = newInterval;
+                    });
+                  },
+                )),
+          );
+        }).then(
+      (value) async {
+        if (value) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setInt("reminder_interval", selectedReminderInterval);
+          prefs.setString("reminder_start_time",
+              formatTimeOfDay(selectedStartReminderTime));
+          prefs.setString("reminder_finish_time",
+              formatTimeOfDay(selectedFinishReminderTime));
+          setReminders();
+        }
+      },
+    );
+  }
+
+  void setReminders() async {
+    await Workmanager().cancelAll();
+    await Workmanager()
+        .initialize(remindersCallbackDispatcher, isInDebugMode: true);
+    await Workmanager().registerPeriodicTask("reminder", "Reminder",
+        inputData: {
+          "start_hour": selectedStartReminderTime.hour,
+          "start_minute": selectedStartReminderTime.minute,
+          "finish_hour": selectedFinishReminderTime.hour,
+          "finish_minute": selectedFinishReminderTime.minute,
+          "init_time": TimeOfDay.now().toString(),
+        },
+        frequency: getDurationFromIntervalInt(selectedReminderInterval));
   }
 
   @override
@@ -81,14 +156,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void clearData(context) async {
     final box = Boxes.getDrinkAmounts();
     await box.deleteFromDisk();
-    SharedPreferences prefrences = await SharedPreferences.getInstance();
-    await prefrences.clear();
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.clear();
+    await Workmanager().cancelAll();
     Navigator.pushNamedAndRemoveUntil(
         context, WelcomeScreen.routeName, (route) => false);
   }
 
-  void showDeleteDialog(context) {
-    showDialog<String>(
+  void showDeleteDialog(context) async {
+    showDialog(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
@@ -170,6 +246,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   }
                   if (index == 1) {
                     intakeIsExpanded = !isExpanded;
+                  }
+                  if (index == 2) {
+                    remindersIsExpanded = !remindersIsExpanded;
                   }
                 });
               },
@@ -333,6 +412,80 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                     ),
                   ),
+                ),
+                ExpansionPanel(
+                  canTapOnHeader: true,
+                  isExpanded: remindersIsExpanded,
+                  headerBuilder: (BuildContext context, bool isExpanded) {
+                    return const ListTile(
+                      title: Text("Reminders"),
+                    );
+                  },
+                  body: Column(
+                    children: [
+                      SwitchListTile(
+                          controlAffinity: ListTileControlAffinity.trailing,
+                          contentPadding:
+                              const EdgeInsets.only(left: 20, right: 20),
+                          activeColor: Theme.of(context).primaryColor,
+                          value: notificationsActive,
+                          title: const Text("Activate Reminders"),
+                          onChanged: (bool newValue) async {
+                            if (newValue) {
+                              if (await Permission.notification
+                                  .request()
+                                  .isGranted) {
+                                setState(() {
+                                  notificationsActive = newValue;
+                                });
+                                SharedPreferences prefs =
+                                    await SharedPreferences.getInstance();
+                                prefs.setBool("reminders_active", newValue);
+                                setReminders();
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            "Please allow notifications in settings for this app")));
+                              }
+                            } else {
+                              setState(() {
+                                notificationsActive = newValue;
+                              });
+                              SharedPreferences prefs =
+                                  await SharedPreferences.getInstance();
+                              prefs.setBool("reminders_active", newValue);
+                              Workmanager().cancelAll();
+                            }
+                          }),
+                      !notificationsActive
+                          ? Container()
+                          : SizedBox(
+                              width: double.infinity,
+                              child: InkWell(
+                                onTap: () {
+                                  openReminderDialog(context);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(children: [
+                                    Text(
+                                      "${formatTimeOfDay(selectedStartReminderTime)} - ${formatTimeOfDay(selectedFinishReminderTime)}",
+                                      style: const TextStyle(
+                                          color: Colors.black87, fontSize: 23),
+                                    ),
+                                    Text(
+                                      getReminderIntervalText(
+                                          selectedReminderInterval),
+                                      style: const TextStyle(
+                                          color: Colors.black54, fontSize: 12),
+                                    )
+                                  ]),
+                                ),
+                              ),
+                            ),
+                    ],
+                  ),
                 )
               ],
             ),
@@ -345,7 +498,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 children: [
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.pushNamed(context, AboutScreen.routeName);
                     },
                     style: ButtonStyle(

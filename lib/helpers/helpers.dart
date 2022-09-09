@@ -1,8 +1,11 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:src/helpers/calculate_intake.dart';
+import 'package:workmanager/workmanager.dart';
 
+import '../api/notifications_api.dart';
 import '../models/DrinkAmount.dart';
 
 String parseDay(weekday) {
@@ -28,6 +31,84 @@ String parseDay(weekday) {
     return "Sun";
   }
   return "";
+}
+
+Duration getDurationFromIntervalInt(int interval) {
+  switch (interval) {
+    case 0:
+      return const Duration(minutes: 30);
+    case 1:
+      return const Duration(hours: 1);
+    case 2:
+      return const Duration(hours: 2);
+    case 3:
+      return const Duration(hours: 3);
+    default:
+      return const Duration(hours: 1);
+  }
+}
+
+void remindersCallbackDispatcher() {
+  Workmanager().executeTask((taskName, inputData) async {
+    await NotificationsApi.init();
+    if (TimeOfDay.now().toString() == inputData?["init_time"]) {
+      return Future.value(true);
+    }
+    if (TimeOfDay.now().hour > inputData?["start_hour"] && // 9:00  now: 9:30
+        TimeOfDay.now().hour < inputData?["finish_hour"]) {
+      if (TimeOfDay.now().hour == inputData?["start_hour"]) {
+        if (TimeOfDay.now().minute > inputData?["start_minute"]) {
+          NotificationsApi.showNotification(
+              body: "Time to drink something!", title: "Minimal Water Tracker");
+        }
+      } else if (TimeOfDay.now().hour == inputData?["finish_hour"]) {
+        if (TimeOfDay.now().minute < inputData?["finish_minute"]) {
+          NotificationsApi.showNotification(
+              body: "Time to drink something!", title: "Minimal Water Tracker");
+        }
+      } else {
+        NotificationsApi.showNotification(
+            body: "Time to drink something!", title: "Minimal Water Tracker");
+      }
+    }
+    return Future.value(true);
+  });
+}
+
+TimeOfDay stringToTimeOfDay(String tod) {
+  return TimeOfDay(
+      hour: int.parse(tod.split(":")[0]), minute: int.parse(tod.split(":")[1]));
+}
+
+String formatTimeOfDay(TimeOfDay time) {
+  String output = "";
+  if (time.hour.toString().length == 1) {
+    output += "0${time.hour}";
+  } else {
+    output += time.hour.toString();
+  }
+  output += ":";
+  if (time.minute.toString().length == 1) {
+    output += "0${time.minute}";
+  } else {
+    output += time.minute.toString();
+  }
+  return output;
+}
+
+String getReminderIntervalText(int selected) {
+  switch (selected) {
+    case 0:
+      return "each 30mins";
+    case 1:
+      return "each 1h";
+    case 2:
+      return "each 2h";
+    case 3:
+      return "each 3h";
+    default:
+      return "";
+  }
 }
 
 String parseMonth(int month) {
