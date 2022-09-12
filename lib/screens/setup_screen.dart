@@ -5,8 +5,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/helpers/calculate_intake.dart';
 import 'package:src/helpers/helpers.dart';
+import 'package:src/notifications/notifications.dart';
 import 'package:src/screens/home_screen.dart';
-import 'package:src/widgets/reminder_time_dialog.dart';
+import 'package:src/widgets/setup-widgets/reminder_time_dialog.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../models/DrinkAmount.dart';
@@ -126,8 +127,9 @@ class _SetupScreenState extends State<SetupScreen> {
         "reminder_finish_time", formatTimeOfDay(selectedFinishReminderTime));
     if (notificationsActive) {
       await Workmanager().cancelAll();
-      await Workmanager()
-          .initialize(remindersCallbackDispatcher, isInDebugMode: true);
+      await Workmanager().initialize(
+          NotificationsApi.remindersCallbackDispatcher,
+          isInDebugMode: true);
       await Workmanager().registerPeriodicTask("reminder", "Reminder",
           inputData: {
             "start_hour": selectedStartReminderTime.hour,

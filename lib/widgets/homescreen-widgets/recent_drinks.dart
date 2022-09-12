@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:src/boxes.dart';
+import 'package:src/helpers/calculate_intake.dart';
 import 'package:src/models/DrinkAmount.dart';
-
-import '../helpers/calculate_intake.dart';
 
 class RecentDrinks extends StatelessWidget {
   final Function onAdd;

@@ -1,11 +1,7 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:src/helpers/calculate_intake.dart';
-import 'package:workmanager/workmanager.dart';
-
-import '../api/notifications_api.dart';
 import '../models/DrinkAmount.dart';
 
 String parseDay(weekday) {
@@ -46,33 +42,6 @@ Duration getDurationFromIntervalInt(int interval) {
     default:
       return const Duration(hours: 1);
   }
-}
-
-void remindersCallbackDispatcher() {
-  Workmanager().executeTask((taskName, inputData) async {
-    await NotificationsApi.init();
-    if (TimeOfDay.now().toString() == inputData?["init_time"]) {
-      return Future.value(true);
-    }
-    if (TimeOfDay.now().hour > inputData?["start_hour"] && // 9:00  now: 9:30
-        TimeOfDay.now().hour < inputData?["finish_hour"]) {
-      if (TimeOfDay.now().hour == inputData?["start_hour"]) {
-        if (TimeOfDay.now().minute > inputData?["start_minute"]) {
-          NotificationsApi.showNotification(
-              body: "Time to drink something!", title: "Minimal Water Tracker");
-        }
-      } else if (TimeOfDay.now().hour == inputData?["finish_hour"]) {
-        if (TimeOfDay.now().minute < inputData?["finish_minute"]) {
-          NotificationsApi.showNotification(
-              body: "Time to drink something!", title: "Minimal Water Tracker");
-        }
-      } else {
-        NotificationsApi.showNotification(
-            body: "Time to drink something!", title: "Minimal Water Tracker");
-      }
-    }
-    return Future.value(true);
-  });
 }
 
 TimeOfDay stringToTimeOfDay(String tod) {

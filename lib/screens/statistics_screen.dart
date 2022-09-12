@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:src/widgets/history_list.dart';
-import 'package:src/widgets/statistics_chart.dart';
-import 'package:src/widgets/statistics_chart_month.dart';
-import 'package:src/widgets/statistics_chart_year.dart';
 
 import '../helpers/helpers.dart';
 import '../models/DrinkAmount.dart';
+import '../widgets/statisticsscreen-widgets/history_list.dart';
+import '../widgets/statisticsscreen-widgets/statistics_chart.dart';
+import '../widgets/statisticsscreen-widgets/statistics_chart_month.dart';
+import '../widgets/statisticsscreen-widgets/statistics_chart_year.dart';
 
 class StatisticsScreen extends StatefulWidget {
   static const routeName = "/statistics";

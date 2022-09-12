@@ -4,9 +4,9 @@ import 'package:src/boxes.dart';
 import 'package:src/models/DrinkAmount.dart';
 import 'package:src/screens/home_screen.dart';
 import 'package:src/screens/statistics_screen.dart';
-import 'package:src/widgets/add_modal.dart';
+import 'package:src/widgets/homescreen-widgets/add_modal.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:src/widgets/nav_bar.dart';
+import 'package:src/widgets/homescreen-widgets/nav_bar.dart';
 
 class NavigationController extends StatefulWidget {
   final int initIndex;
@@ -18,12 +18,14 @@ class NavigationController extends StatefulWidget {
 }
 
 class NavigationControllerState extends State<NavigationController> {
+  // * Page Management
   late PageController pageController;
   int activeIndex = 0;
   final iconsList = [Icons.apps, Icons.bar_chart];
+
+  // * Intake-related
   dynamic prevIsSunny;
   dynamic prevIsActive;
-
   String activeUnit = "";
   bool isSunny = false;
   bool isActive = false;
@@ -64,8 +66,26 @@ class NavigationControllerState extends State<NavigationController> {
   void initState() {
     pageController = PageController(initialPage: widget.initIndex);
     activeIndex = widget.initIndex;
-    super.initState();
     loadPreferences();
+    super.initState();
+  }
+
+  void changeActive(value) {
+    setState(() {
+      isActive = value;
+    });
+  }
+
+  void changeSunny(value) {
+    setState(() {
+      isSunny = value;
+    });
+  }
+
+  void onPageChanged(int newIndex) {
+    setState(() {
+      activeIndex = newIndex;
+    });
   }
 
   void createModal() {
@@ -81,61 +101,10 @@ class NavigationControllerState extends State<NavigationController> {
         });
   }
 
-  void changeActive(value) {
-    setState(() {
-      isActive = value;
-    });
-  }
-
-  void changeSunny(value) {
-    setState(() {
-      isSunny = value;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-          physics: const NeverScrollableScrollPhysics(),
-          onPageChanged: (newIndex) {
-            setState(() {
-              activeIndex = newIndex;
-            });
-          },
-          controller: pageController,
-          children: [
-            ValueListenableBuilder<Box<DrinkAmount>>(
-                valueListenable: Boxes.getDrinkAmounts().listenable(),
-                builder: (context, box, _) {
-                  final drinkAmounts = box.values.toList().cast<DrinkAmount>();
-                  return HomeScreen(
-                    changeActive: changeActive,
-                    changeSunny: changeSunny,
-                    loadPreferences: loadPreferences,
-                    activeUnit: activeUnit,
-                    intakeAmount: intakeAmount,
-                    isSunny: isSunny,
-                    isActive: isActive,
-                    onAdd: onAdd,
-                    prevIsActive: prevIsActive,
-                    prevIsSunny: prevIsActive,
-                    setPrevIsActive: setPrevIsActive,
-                    setPrevIsSunny: setPrevIsSunny,
-                    drinksAmounts: drinkAmounts,
-                  );
-                }),
-            ValueListenableBuilder<Box<DrinkAmount>>(
-                valueListenable: Boxes.getDrinkAmounts().listenable(),
-                builder: (context, box, _) {
-                  final drinkAmounts = box.values.toList().cast<DrinkAmount>();
-                  return StatisticsScreen(
-                    activeUnit: activeUnit,
-                    intakeAmount: intakeAmount,
-                    drinksAmounts: drinkAmounts,
-                  );
-                })
-          ]),
+      body: pageViewBuilder(),
       floatingActionButton: SizedBox(
         height: 65,
         width: 65,
@@ -162,5 +131,44 @@ class NavigationControllerState extends State<NavigationController> {
         },
       ),
     );
+  }
+
+  PageView pageViewBuilder() {
+    return PageView(
+        physics: const NeverScrollableScrollPhysics(),
+        onPageChanged: onPageChanged,
+        controller: pageController,
+        children: [
+          ValueListenableBuilder<Box<DrinkAmount>>(
+              valueListenable: Boxes.getDrinkAmounts().listenable(),
+              builder: (context, box, _) {
+                final drinkAmounts = box.values.toList().cast<DrinkAmount>();
+                return HomeScreen(
+                  changeActive: changeActive,
+                  changeSunny: changeSunny,
+                  loadPreferences: loadPreferences,
+                  activeUnit: activeUnit,
+                  intakeAmount: intakeAmount,
+                  isSunny: isSunny,
+                  isActive: isActive,
+                  onAdd: onAdd,
+                  prevIsActive: prevIsActive,
+                  prevIsSunny: prevIsActive,
+                  setPrevIsActive: setPrevIsActive,
+                  setPrevIsSunny: setPrevIsSunny,
+                  drinksAmounts: drinkAmounts,
+                );
+              }),
+          ValueListenableBuilder<Box<DrinkAmount>>(
+              valueListenable: Boxes.getDrinkAmounts().listenable(),
+              builder: (context, box, _) {
+                final drinkAmounts = box.values.toList().cast<DrinkAmount>();
+                return StatisticsScreen(
+                  activeUnit: activeUnit,
+                  intakeAmount: intakeAmount,
+                  drinksAmounts: drinkAmounts,
+                );
+              })
+        ]);
   }
 }

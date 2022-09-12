@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:src/boxes.dart';
 import 'package:src/helpers/calculate_intake.dart';
 import 'package:src/models/DrinkAmount.dart';
-import 'package:src/widgets/drinktype_selector.dart';
-
-import '../boxes.dart';
+import 'package:src/widgets/homescreen-widgets/drinktype_selector.dart';
 
 class AddModal extends StatefulWidget {
   final Function onAdd;

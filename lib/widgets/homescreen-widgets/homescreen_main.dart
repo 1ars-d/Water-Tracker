@@ -3,8 +3,8 @@ import 'package:src/helpers/helpers.dart';
 import 'package:src/models/DrinkAmount.dart';
 import 'package:src/screens/about_screen.dart';
 import 'package:src/screens/settings_screen.dart';
-import 'package:src/widgets/progress.dart';
-import 'package:src/widgets/recent_drinks.dart';
+import 'package:src/widgets/homescreen-widgets/progress.dart';
+import 'package:src/widgets/homescreen-widgets/recent_drinks.dart';
 
 class HomescreenMain extends StatelessWidget {
   final int todaysDrinkAmount;

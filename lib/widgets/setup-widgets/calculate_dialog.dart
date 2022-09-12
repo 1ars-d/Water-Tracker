@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../helpers/calculate_intake.dart';
+import 'package:src/helpers/calculate_intake.dart';
 
 class CalculateDialog extends StatefulWidget {
   final String activeUnit;
@@ -11,10 +10,10 @@ class CalculateDialog extends StatefulWidget {
       : super(key: key);
 
   @override
-  _CalculateDialogState createState() => _CalculateDialogState();
+  CalculateDialogState createState() => CalculateDialogState();
 }
 
-class _CalculateDialogState extends State<CalculateDialog> {
+class CalculateDialogState extends State<CalculateDialog> {
   TextEditingController weightController = TextEditingController();
   TextEditingController ageController = TextEditingController();
   bool weightIsValid = true;

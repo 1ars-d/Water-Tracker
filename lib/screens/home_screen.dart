@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/helpers/helpers.dart';
 import 'package:src/models/DrinkAmount.dart';
-import 'package:src/widgets/homescreen_main.dart';
+
+import '../widgets/homescreen-widgets/homescreen_main.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = "/home";

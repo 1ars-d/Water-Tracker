@@ -4,12 +4,12 @@ import 'package:numberpicker/numberpicker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/helpers/helpers.dart';
+import 'package:src/notifications/notifications.dart';
 import 'package:src/screens/welcome_screen.dart';
-import 'package:src/widgets/calculate_dialog.dart';
 import 'package:workmanager/workmanager.dart';
-
 import '../boxes.dart';
-import '../widgets/reminder_time_dialog.dart';
+import '../widgets/setup-widgets/calculate_dialog.dart';
+import '../widgets/setup-widgets/reminder_time_dialog.dart';
 import 'about_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -95,8 +95,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void setReminders() async {
     await Workmanager().cancelAll();
-    await Workmanager()
-        .initialize(remindersCallbackDispatcher, isInDebugMode: true);
+    await Workmanager().initialize(NotificationsApi.remindersCallbackDispatcher,
+        isInDebugMode: true);
     await Workmanager().registerPeriodicTask("reminder", "Reminder",
         inputData: {
           "start_hour": selectedStartReminderTime.hour,
