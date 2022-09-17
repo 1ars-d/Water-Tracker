@@ -111,6 +111,7 @@ class StatisticsChart extends StatelessWidget {
           maxY: calculateMaxY(activeUnit),
           lineBarsData: [
             LineChartBarData(
+                dashArray: [7, 5],
                 color: const Color.fromRGBO(0, 0, 0, 0.2),
                 spots: [
                   FlSpot(0, intakeAmount.toDouble()),

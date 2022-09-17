@@ -129,7 +129,7 @@ class _SetupScreenState extends State<SetupScreen> {
       await Workmanager().cancelAll();
       await Workmanager().initialize(
           NotificationsApi.remindersCallbackDispatcher,
-          isInDebugMode: true);
+          isInDebugMode: false);
       await Workmanager().registerPeriodicTask("reminder", "Reminder",
           inputData: {
             "start_hour": selectedStartReminderTime.hour,

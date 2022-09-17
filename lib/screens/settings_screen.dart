@@ -96,7 +96,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void setReminders() async {
     await Workmanager().cancelAll();
     await Workmanager().initialize(NotificationsApi.remindersCallbackDispatcher,
-        isInDebugMode: true);
+        isInDebugMode: false);
     await Workmanager().registerPeriodicTask("reminder", "Reminder",
         inputData: {
           "start_hour": selectedStartReminderTime.hour,

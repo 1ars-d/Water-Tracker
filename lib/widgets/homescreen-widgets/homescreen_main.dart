@@ -209,15 +209,15 @@ class TopActions extends StatelessWidget {
                 ),
               ],
             ),
-            Container(
-              alignment: Alignment.center,
-              padding: const EdgeInsets.only(left: 10, top: 10, bottom: 10),
-              child: const FittedBox(
-                fit: BoxFit.fitWidth,
-                child: Text(
-                  "Today's Progress",
-                  style: TextStyle(
-                      fontSize: 18, color: Color.fromRGBO(0, 0, 0, 0.75)),
+            const Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(15.0),
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: Text(
+                    "Today's Progress",
+                    style: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.75)),
+                  ),
                 ),
               ),
             ),
