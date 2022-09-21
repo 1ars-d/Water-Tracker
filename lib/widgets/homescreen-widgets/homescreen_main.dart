@@ -78,20 +78,22 @@ class HomescreenMain extends StatelessWidget {
                                   : 0),
                           todaysAmount: todaysDrinkAmount),
                     ),
-                    RecentDrinks(
-                        onAdd: onAdd,
-                        recentDrinks: drinkAmounts.length < 2
-                            ? drinkAmounts.reversed.toList()
-                            : drinkAmounts.length >= 5
-                                ? drinkAmounts
-                                    .sublist(drinkAmounts.length - 4,
-                                        drinkAmounts.length)
-                                    .reversed
-                                    .toList()
-                                : drinkAmounts
-                                    .sublist(0, drinkAmounts.length)
-                                    .reversed
-                                    .toList()),
+                    drinkAmounts.isEmpty
+                        ? const SizedBox(height: 110)
+                        : RecentDrinks(
+                            onAdd: onAdd,
+                            recentDrinks: drinkAmounts.length < 2
+                                ? drinkAmounts.reversed.toList()
+                                : drinkAmounts.length >= 5
+                                    ? drinkAmounts
+                                        .sublist(drinkAmounts.length - 4,
+                                            drinkAmounts.length)
+                                        .reversed
+                                        .toList()
+                                    : drinkAmounts
+                                        .sublist(0, drinkAmounts.length)
+                                        .reversed
+                                        .toList()),
                   ],
                 ),
               ),

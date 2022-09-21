@@ -436,12 +436,12 @@ class _SetupScreenState extends State<SetupScreen> {
 
     return Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
+        /* appBar: AppBar(
           surfaceTintColor: Colors.white,
           leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios),
               onPressed: () => Navigator.pop(context)),
-        ),
+        ), */
         floatingActionButton: FloatingActionButton.extended(
           onPressed: onSubmit,
           backgroundColor: Theme.of(context).primaryColor,

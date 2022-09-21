@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/helpers/generate_routes.dart';
 import 'package:src/models/DrinkAmount.dart';
 import 'package:src/screens/navigation_controller.dart';
-import 'package:src/screens/welcome_screen.dart';
+import 'package:src/screens/setup_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
@@ -64,7 +64,7 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       home: _intakeAmount == -1
-          ? const WelcomeScreen()
+          ? const SetupScreen()
           : const NavigationController(
               initIndex: 0,
             ),

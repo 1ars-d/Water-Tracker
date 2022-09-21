@@ -27,6 +27,7 @@ class AddModalState extends State<AddModal> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       activeUnit = prefs.getString("unit") ?? "";
+      _currentAmount = activeUnit == "ml" ? 200 : 10;
     });
   }
 
@@ -34,7 +35,6 @@ class AddModalState extends State<AddModal> {
   void initState() {
     super.initState();
     loadActiveUnit();
-    _currentAmount = activeUnit == "ml" ? 200 : 10;
   }
 
   void setSelectedDrink(newDrink) {

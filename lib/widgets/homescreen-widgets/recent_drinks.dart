@@ -72,10 +72,15 @@ class RecentDrinks extends StatelessWidget {
                                         image: AssetImage(
                                             "assets/images/beverages/${drink.drinkType}.png")),
                               ),
-                              Text(
-                                '${drink.amount}${drink.unit}',
-                                style: const TextStyle(
-                                    color: Color.fromRGBO(0, 0, 0, 0.5)),
+                              Expanded(
+                                child: FittedBox(
+                                  fit: BoxFit.fitWidth,
+                                  child: Text(
+                                    '${drink.amount}${drink.unit}',
+                                    style: const TextStyle(
+                                        color: Color.fromRGBO(0, 0, 0, 0.5)),
+                                  ),
+                                ),
                               ),
                             ],
                           ),

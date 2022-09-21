@@ -22,7 +22,8 @@ class CalculateDialogState extends State<CalculateDialog> {
   String activeWeightUnit = "kg";
 
   bool validateWeight() {
-    if (weightController.text.isEmpty || int.parse(weightController.text) < 1) {
+    if (weightController.text.isEmpty ||
+        int.parse(weightController.text) < 10) {
       setState(() {
         weightIsValid = false;
       });

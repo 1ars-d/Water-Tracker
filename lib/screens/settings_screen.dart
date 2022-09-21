@@ -5,7 +5,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/helpers/helpers.dart';
 import 'package:src/notifications/notifications.dart';
-import 'package:src/screens/welcome_screen.dart';
 import 'package:workmanager/workmanager.dart';
 import '../boxes.dart';
 import '../widgets/setup-widgets/calculate_dialog.dart';
@@ -160,7 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await preferences.clear();
     await Workmanager().cancelAll();
     Navigator.pushNamedAndRemoveUntil(
-        context, WelcomeScreen.routeName, (route) => false);
+        context, SettingsScreen.routeName, (route) => false);
   }
 
   void showDeleteDialog(context) async {
