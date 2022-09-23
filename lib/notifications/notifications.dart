@@ -29,28 +29,28 @@ class NotificationsApi {
     NotificationsApi.showNotification(
         body: "Time to drink something!", title: "Minimal Water Tracker");
   }
+}
 
-  static void remindersCallbackDispatcher() {
-    Workmanager().executeTask((taskName, inputData) async {
-      await NotificationsApi.init();
-      if (TimeOfDay.now().toString() == inputData?["init_time"]) {
-        return Future.value(true);
-      }
-      if (TimeOfDay.now().hour > inputData?["start_hour"] && // 9:00  now: 9:30
-          TimeOfDay.now().hour < inputData?["finish_hour"]) {
-        if (TimeOfDay.now().hour == inputData?["start_hour"]) {
-          if (TimeOfDay.now().minute > inputData?["start_minute"]) {
-            sendDrinkReminder();
-          }
-        } else if (TimeOfDay.now().hour == inputData?["finish_hour"]) {
-          if (TimeOfDay.now().minute < inputData?["finish_minute"]) {
-            sendDrinkReminder();
-          }
-        } else {
-          sendDrinkReminder();
-        }
-      }
+void remindersCallbackDispatcher() {
+  Workmanager().executeTask((taskName, inputData) async {
+    await NotificationsApi.init();
+    if (TimeOfDay.now().toString() == inputData?["init_time"]) {
       return Future.value(true);
-    });
-  }
+    }
+    if (TimeOfDay.now().hour > inputData?["start_hour"] && // 9:00  now: 9:30
+        TimeOfDay.now().hour < inputData?["finish_hour"]) {
+      if (TimeOfDay.now().hour == inputData?["start_hour"]) {
+        if (TimeOfDay.now().minute > inputData?["start_minute"]) {
+          NotificationsApi.sendDrinkReminder();
+        }
+      } else if (TimeOfDay.now().hour == inputData?["finish_hour"]) {
+        if (TimeOfDay.now().minute < inputData?["finish_minute"]) {
+          NotificationsApi.sendDrinkReminder();
+        }
+      } else {
+        NotificationsApi.sendDrinkReminder();
+      }
+    }
+    return Future.value(true);
+  });
 }

@@ -15,7 +15,7 @@ class AddModal extends StatefulWidget {
 }
 
 class AddModalState extends State<AddModal> {
-  int _currentAmount = 0;
+  int _currentAmount = 100;
   String activeUnit = "";
 
   DateTime activeDate = DateTime.now();
@@ -27,14 +27,14 @@ class AddModalState extends State<AddModal> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       activeUnit = prefs.getString("unit") ?? "";
-      _currentAmount = activeUnit == "ml" ? 200 : 10;
+      _currentAmount = (activeUnit == "ml" ? 200 : 10);
     });
   }
 
   @override
   void initState() {
-    super.initState();
     loadActiveUnit();
+    super.initState();
   }
 
   void setSelectedDrink(newDrink) {

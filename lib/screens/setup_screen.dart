@@ -127,9 +127,8 @@ class _SetupScreenState extends State<SetupScreen> {
         "reminder_finish_time", formatTimeOfDay(selectedFinishReminderTime));
     if (notificationsActive) {
       await Workmanager().cancelAll();
-      await Workmanager().initialize(
-          NotificationsApi.remindersCallbackDispatcher,
-          isInDebugMode: false);
+      await Workmanager()
+          .initialize(remindersCallbackDispatcher, isInDebugMode: false);
       await Workmanager().registerPeriodicTask("reminder", "Reminder",
           inputData: {
             "start_hour": selectedStartReminderTime.hour,
@@ -436,12 +435,10 @@ class _SetupScreenState extends State<SetupScreen> {
 
     return Scaffold(
         backgroundColor: Colors.white,
-        /* appBar: AppBar(
+        appBar: AppBar(
           surfaceTintColor: Colors.white,
-          leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios),
-              onPressed: () => Navigator.pop(context)),
-        ), */
+          toolbarHeight: 10,
+        ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: onSubmit,
           backgroundColor: Theme.of(context).primaryColor,

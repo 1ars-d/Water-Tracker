@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/helpers/helpers.dart';
 import 'package:src/notifications/notifications.dart';
+import 'package:src/screens/setup_screen.dart';
 import 'package:workmanager/workmanager.dart';
 import '../boxes.dart';
 import '../widgets/setup-widgets/calculate_dialog.dart';
@@ -94,8 +95,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void setReminders() async {
     await Workmanager().cancelAll();
-    await Workmanager().initialize(NotificationsApi.remindersCallbackDispatcher,
-        isInDebugMode: false);
+    await Workmanager()
+        .initialize(remindersCallbackDispatcher, isInDebugMode: false);
     await Workmanager().registerPeriodicTask("reminder", "Reminder",
         inputData: {
           "start_hour": selectedStartReminderTime.hour,
@@ -109,8 +110,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void initState() {
-    super.initState();
     loadData();
+    super.initState();
   }
 
   void setUnit(String newUnit) async {
@@ -159,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await preferences.clear();
     await Workmanager().cancelAll();
     Navigator.pushNamedAndRemoveUntil(
-        context, SettingsScreen.routeName, (route) => false);
+        context, SetupScreen.routeName, (route) => false);
   }
 
   void showDeleteDialog(context) async {
@@ -354,8 +355,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             NumberPicker(
                                 minValue: activeUnit == "ml" ? 50 : 5,
-                                maxValue:
-                                    activeUnit == "ml" ? 10000000000 : 70000,
+                                maxValue: activeUnit == "ml" ? 10000000 : 70000,
                                 itemHeight: 50,
                                 textStyle: const TextStyle(
                                     color: Color.fromRGBO(0, 0, 0, 0.3),
@@ -374,6 +374,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                             color: Theme.of(context)
                                                 .primaryColor))),
                                 value: _currentGoal,
+                                itemCount: 3,
                                 step: activeUnit == "ml" ? 50 : 5,
                                 haptics: true,
                                 onChanged: (value) {
