@@ -19,6 +19,11 @@ You can download the app for android [here](https://play.google.com/store/apps/d
 
 ## Screenshots
 
+|                                                              |                                                              |                                                              |
+| :----------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
+| <img width="400" src="/assets/screenshots/screenshot_1.png"> | <img width="400" src="/assets/screenshots/screenshot_2.png"> | <img width="400" src="/assets/screenshots/screenshot_3.png"> |
+| <img width="400" src="/assets/screenshots/screenshot_4.png"> | <img width="400" src="/assets/screenshots/screenshot_5.png"> |
+
 ## Development
 
 Install the Flutter SDK from the official [flutter.dev](https://docs.flutter.dev/get-started/install) website for your operating system.
