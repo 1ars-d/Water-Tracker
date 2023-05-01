@@ -1,6 +1,6 @@
 <!-- Logo -->
 <p align="center">
-  <img width="300" src="/assets/images/icons/icon_transparent.png">
+  <img width="220" src="/assets/images/icons/icon_transparent.png">
 </p>
 
 ---
