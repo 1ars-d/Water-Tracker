@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../helpers/helpers.dart';
 import '../models/DrinkAmount.dart';
@@ -93,82 +92,81 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       data = data.map((e) => (e / 30).round()).toList();
     }
 
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: isDarkTheme
+          ? const Color(0xff2D2D2D)
+          : const Color.fromRGBO(0, 0, 0, 0.03),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const Text("History"),
         actions: [
-          Material(
-            color: Colors.white,
-            child: Container(
-              padding: const EdgeInsets.only(right: 20),
-              child:
-                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                const Text(
-                  "Chart Period",
-                  style: TextStyle(fontSize: 15, color: Colors.black87),
-                ),
-                const SizedBox(
-                  width: 15,
-                ),
-                SizedBox(
-                  width: 100,
-                  child: DropdownButton<String>(
-                    value: selectedPeriod,
-                    icon: const Icon(
-                      Icons.arrow_drop_down,
-                      size: 30,
-                      color: Color(0xffD9D9D9),
-                    ),
-                    dropdownColor: Colors.white,
-                    style: TextStyle(
-                        fontSize: 19, color: Theme.of(context).primaryColor),
-                    underline: Container(),
-                    borderRadius: BorderRadius.circular(5),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedPeriod = newValue!;
-                      });
-                    },
-                    isExpanded: true,
-                    elevation: 1,
-                    hint: const Text("Choose Unit"),
-                    items: <String>["Week", "Month", "Year"]
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
+          Container(
+            padding: const EdgeInsets.only(right: 20),
+            child:
+                Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+              Text(
+                "Chart Period",
+                style: TextStyle(
+                    fontSize: 15,
+                    color: isDarkTheme ? Colors.white : Colors.black87),
+              ),
+              const SizedBox(
+                width: 15,
+              ),
+              SizedBox(
+                width: 100,
+                child: DropdownButton<String>(
+                  value: selectedPeriod,
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    size: 30,
+                    color: Color(0xffD9D9D9),
                   ),
+                  dropdownColor: isDarkTheme
+                      ? const Color.fromARGB(255, 50, 50, 50)
+                      : Colors.white,
+                  style: TextStyle(
+                      fontSize: 19, color: Theme.of(context).primaryColor),
+                  underline: Container(),
+                  borderRadius: BorderRadius.circular(5),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedPeriod = newValue!;
+                    });
+                  },
+                  isExpanded: true,
+                  elevation: 1,
+                  hint: const Text("Choose Unit"),
+                  items: <String>["Week", "Month", "Year"]
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
                 ),
-              ]),
-            ),
+              ),
+            ]),
           ),
         ],
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          // Status bar color
-          statusBarColor: Colors.transparent,
-
-          // Status bar brightness (optional)
-          statusBarIconBrightness: Brightness.dark, // For Android (dark icons)
-          statusBarBrightness: Brightness.light, // For iOS (dark icons)
-        ),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         toolbarHeight: 70,
       ),
       body: SizedBox(
         height: MediaQuery.of(context).size.height,
         child: Column(children: [
-          const Divider(
-            color: Color.fromRGBO(0, 0, 0, 0.2),
+          Divider(
+            color: isDarkTheme
+                ? const Color(0xff4B4B4B)
+                : const Color.fromRGBO(0, 0, 0, 0.1),
             height: 1,
           ),
           Container(
-            decoration: const BoxDecoration(
-                color: Colors.white,
-                border: BorderDirectional(
+            decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                border: const BorderDirectional(
                     bottom: BorderSide(color: Color.fromRGBO(0, 0, 0, 0.1)))),
             padding: const EdgeInsets.only(bottom: 10),
             child: Column(

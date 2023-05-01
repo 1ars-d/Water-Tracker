@@ -63,14 +63,18 @@ class CalculateDialogState extends State<CalculateDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     return Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "Select your Weight",
-              style: TextStyle(fontSize: 18, color: Color(0xFF3B3B3B)),
+              style: TextStyle(
+                  fontSize: 18,
+                  color:
+                      isDarkTheme ? Colors.white70 : const Color(0xFF3B3B3B)),
             ),
             const SizedBox(
               height: 15,
@@ -78,7 +82,7 @@ class CalculateDialogState extends State<CalculateDialog> {
             Row(
               children: [
                 SizedBox(
-                  height: 55,
+                  height: 50,
                   width: 150,
                   child: TextField(
                     onChanged: (_) {
@@ -101,8 +105,9 @@ class CalculateDialogState extends State<CalculateDialog> {
                             width: 1.5),
                       ),
                     ),
-                    style: const TextStyle(
-                        color: Colors.black87, fontWeight: FontWeight.normal),
+                    style: TextStyle(
+                        color: isDarkTheme ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.normal),
                     controller: weightController,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
@@ -119,10 +124,14 @@ class CalculateDialogState extends State<CalculateDialog> {
                     color: Color(0xffD9D9D9),
                   ),
                   elevation: 1,
-                  dropdownColor: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  style:
-                      const TextStyle(color: Color(0xff575757), fontSize: 18),
+                  dropdownColor: isDarkTheme
+                      ? const Color.fromARGB(255, 50, 50, 50)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(5),
+                  style: TextStyle(
+                      color: isDarkTheme
+                          ? Colors.white54
+                          : const Color.fromRGBO(0, 0, 0, 0.4)),
                   onChanged: (String? newValue) {
                     setState(() {
                       activeWeightUnit = newValue!;
@@ -141,9 +150,12 @@ class CalculateDialogState extends State<CalculateDialog> {
             const SizedBox(
               height: 20,
             ),
-            const Text(
+            Text(
               "Select your Age",
-              style: TextStyle(fontSize: 20, color: Color(0xFF3B3B3B)),
+              style: TextStyle(
+                  fontSize: 20,
+                  color:
+                      isDarkTheme ? Colors.white70 : const Color(0xFF3B3B3B)),
             ),
             const SizedBox(
               height: 15,
@@ -152,7 +164,7 @@ class CalculateDialogState extends State<CalculateDialog> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
-                  height: 55,
+                  height: 50,
                   width: 120,
                   child: TextField(
                     onChanged: (_) => validateAge(),
@@ -173,6 +185,9 @@ class CalculateDialogState extends State<CalculateDialog> {
                             width: 1.5),
                       ),
                     ),
+                    style: TextStyle(
+                        color: isDarkTheme ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.normal),
                     controller: ageController,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: false),
@@ -181,9 +196,13 @@ class CalculateDialogState extends State<CalculateDialog> {
                 const SizedBox(
                   width: 15,
                 ),
-                const Text(
+                Text(
                   "Years",
-                  style: TextStyle(fontSize: 18, color: Color(0xFF3B3B3B)),
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: isDarkTheme
+                          ? Colors.white70
+                          : const Color(0xFF3B3B3B)),
                 ),
               ],
             ),
@@ -191,40 +210,38 @@ class CalculateDialogState extends State<CalculateDialog> {
               height: 20,
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 13, horizontal: 40),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10))),
-                    child: Text(
-                      "Cancel",
-                      style: TextStyle(color: Theme.of(context).primaryColor),
-                    ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 15),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8))),
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                        color: isDarkTheme
+                            ? Colors.white54
+                            : const Color.fromRGBO(0, 0, 0, 0.4)),
                   ),
                 ),
                 const SizedBox(
                   width: 10,
                 ),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => onSubmit(),
-                    style: ElevatedButton.styleFrom(
-                        primary: Theme.of(context).primaryColor,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 13, horizontal: 40),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10))),
-                    child: const Text(
-                      "Submit",
-                      style: TextStyle(color: Colors.white),
-                    ),
+                TextButton(
+                  onPressed: onSubmit,
+                  style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 15),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8))),
+                  child: Text(
+                    "Submit",
+                    style: TextStyle(color: Theme.of(context).primaryColor),
                   ),
                 ),
               ],

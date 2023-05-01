@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/helpers/generate_routes.dart';
+import 'package:src/helpers/theme_provider.dart';
 import 'package:src/models/DrinkAmount.dart';
 import 'package:src/screens/navigation_controller.dart';
-import 'package:src/screens/setup_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:src/screens/startup_navigation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +20,29 @@ void main() async {
 
   //* Lock screen in portrait-mode
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String themeMode = prefs.getString("theme_mode") ?? "system";
+
+  if (themeMode.isNotEmpty) {
+    var brightness = SchedulerBinding.instance.window.platformBrightness;
+    bool isDarkTheme = themeMode != "system"
+        ? themeMode == "dark"
+        : brightness == Brightness.dark;
+    if (isDarkTheme) {
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
+          systemNavigationBarColor: const Color(0xff252525),
+          systemNavigationBarContrastEnforced: true,
+          systemNavigationBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark));
+    } else {
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
+          systemNavigationBarColor: Colors.white,
+          systemNavigationBarContrastEnforced: true,
+          systemNavigationBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light));
+    }
+  }
 
   runApp(const MyApp());
 }
@@ -47,28 +72,32 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Set color of systemnavigation
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
+    /* SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
         systemNavigationBarColor: Colors.white,
         systemNavigationBarContrastEnforced: true,
-        systemNavigationBarIconBrightness: Brightness.dark));
+        systemNavigationBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light)); */
 
-    return MaterialApp(
-      color: Colors.white,
-      debugShowCheckedModeBanner: false,
-      title: 'Minimal Water Tracker',
-      theme: ThemeData(
-        textTheme: GoogleFonts.robotoFlexTextTheme(),
-        splashFactory: InkRipple.splashFactory,
-        primaryColor: const Color(0xff41C4FD),
-        useMaterial3: true,
-      ),
-      home: _intakeAmount == -1
-          ? const SetupScreen()
-          : const NavigationController(
-              initIndex: 0,
-            ),
-      onGenerateRoute: generateRoutes,
+    return ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      builder: (context, _) {
+        final themeProvider = Provider.of<ThemeProvider>(context);
+
+        return MaterialApp(
+          color: Colors.white,
+          debugShowCheckedModeBanner: false,
+          title: 'Minimal Water Tracker',
+          themeMode: themeProvider.theme,
+          darkTheme: MyThemes.darkTheme,
+          theme: MyThemes.lightTheme,
+          home: _intakeAmount == -1
+              ? const StartupNavigation()
+              : const NavigationController(
+                  initIndex: 0,
+                ),
+          onGenerateRoute: generateRoutes,
+        );
+      },
     );
   }
 }

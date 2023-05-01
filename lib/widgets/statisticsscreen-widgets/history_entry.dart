@@ -11,8 +11,12 @@ class HistoryEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Material(
-      color: Colors.white,
+      color: isDarkTheme
+          ? Theme.of(context).scaffoldBackgroundColor
+          : Colors.white,
       child: InkWell(
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -22,9 +26,13 @@ class HistoryEntry extends StatelessWidget {
         },
         onLongPress: () => showDeleteDialog(context, amount),
         child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(
-              bottom: BorderSide(color: Color.fromRGBO(0, 0, 0, 0.2), width: 1),
+              bottom: BorderSide(
+                  color: isDarkTheme
+                      ? Colors.white12
+                      : const Color.fromRGBO(0, 0, 0, 0.2),
+                  width: 1),
             ),
           ),
           padding: const EdgeInsets.all(15),
@@ -32,8 +40,11 @@ class HistoryEntry extends StatelessWidget {
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text(
               '${amount.createdDate.hour.toString().length > 1 ? amount.createdDate.hour.toString() : "0${amount.createdDate.hour}"}:${amount.createdDate.minute.toString().length > 1 ? amount.createdDate.minute.toString() : "0${amount.createdDate.minute}"}',
-              style: const TextStyle(
-                  color: Color.fromRGBO(0, 0, 0, 0.8), fontSize: 16),
+              style: TextStyle(
+                  color: isDarkTheme
+                      ? Colors.white
+                      : const Color.fromRGBO(0, 0, 0, 0.8),
+                  fontSize: 16),
             ),
             Row(
               children: [
@@ -42,8 +53,11 @@ class HistoryEntry extends StatelessWidget {
                       ? "Soft Drink"
                       : amount.drinkType[0].toUpperCase() +
                           amount.drinkType.substring(1),
-                  style: const TextStyle(
-                      color: Color.fromRGBO(0, 0, 0, 0.8), fontSize: 15),
+                  style: TextStyle(
+                      color: isDarkTheme
+                          ? Colors.white
+                          : const Color.fromRGBO(0, 0, 0, 0.8),
+                      fontSize: 15),
                 ),
                 const SizedBox(
                   width: 10,
@@ -62,8 +76,11 @@ class HistoryEntry extends StatelessWidget {
                 const SizedBox(width: 15),
                 Text(
                   '${amount.amount}${amount.unit}',
-                  style: const TextStyle(
-                      color: Color.fromRGBO(0, 0, 0, 0.8), fontSize: 16),
+                  style: TextStyle(
+                      color: isDarkTheme
+                          ? Colors.white
+                          : const Color.fromRGBO(0, 0, 0, 0.8),
+                      fontSize: 16),
                 )
               ],
             )

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:src/helpers/helpers.dart';
 import 'package:src/models/DrinkAmount.dart';
-import 'package:src/screens/about_screen.dart';
-import 'package:src/screens/settings_screen.dart';
-import 'package:src/widgets/homescreen-widgets/progress.dart';
 import 'package:src/widgets/homescreen-widgets/recent_drinks.dart';
+
+import 'progress.dart';
 
 class HomescreenMain extends StatelessWidget {
   final int todaysDrinkAmount;
@@ -38,69 +37,66 @@ class HomescreenMain extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 50),
-      child: Column(
-        children: [
-          TopActions(
-              activeUnit: activeUnit,
-              loadPreferences: loadPreferences,
-              isSunny: isSunny,
-              sunnyIntakeChange: sunnyIntakeChange,
-              intakeAmount: intakeAmount,
-              isActive: isActive,
-              activeIntakeChange: activeIntakeChange),
-          Expanded(
-            child: SingleChildScrollView(
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height - 240,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const SizedBox(),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width < 450
-                          ? MediaQuery.of(context).size.width
-                          : 450,
-                      height: MediaQuery.of(context).size.width < 450
-                          ? MediaQuery.of(context).size.width
-                          : 450,
-                      child: Progress(
-                          activeUnit: activeUnit,
-                          prevAmount: prevAmount,
-                          prevIntake: prevIntake,
-                          intakeAmount: int.parse(intakeAmount.toString()) +
-                              (isSunny
-                                  ? getIntakeChangeDifference(activeUnit)
-                                  : 0) +
-                              (isActive
-                                  ? getIntakeChangeDifference(activeUnit)
-                                  : 0),
-                          todaysAmount: todaysDrinkAmount),
-                    ),
-                    drinkAmounts.isEmpty
-                        ? const SizedBox(height: 110)
-                        : RecentDrinks(
-                            onAdd: onAdd,
-                            recentDrinks: drinkAmounts.length < 2
-                                ? drinkAmounts.reversed.toList()
-                                : drinkAmounts.length >= 5
-                                    ? drinkAmounts
-                                        .sublist(drinkAmounts.length - 4,
-                                            drinkAmounts.length)
-                                        .reversed
-                                        .toList()
-                                    : drinkAmounts
-                                        .sublist(0, drinkAmounts.length)
-                                        .reversed
-                                        .toList()),
-                  ],
-                ),
+    return Column(
+      children: [
+        TopActions(
+            activeUnit: activeUnit,
+            loadPreferences: loadPreferences,
+            isSunny: isSunny,
+            sunnyIntakeChange: sunnyIntakeChange,
+            intakeAmount: intakeAmount,
+            isActive: isActive,
+            activeIntakeChange: activeIntakeChange),
+        Expanded(
+          child: SingleChildScrollView(
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height - 220,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width < 450
+                        ? MediaQuery.of(context).size.width
+                        : 450,
+                    height: MediaQuery.of(context).size.width < 450
+                        ? MediaQuery.of(context).size.width
+                        : 450,
+                    child: Progress(
+                        activeUnit: activeUnit,
+                        prevAmount: prevAmount,
+                        prevIntake: prevIntake,
+                        intakeAmount: int.parse(intakeAmount.toString()) +
+                            (isSunny
+                                ? getIntakeChangeDifference(activeUnit)
+                                : 0) +
+                            (isActive
+                                ? getIntakeChangeDifference(activeUnit)
+                                : 0),
+                        todaysAmount: todaysDrinkAmount),
+                  ),
+                  drinkAmounts.isEmpty
+                      ? const SizedBox(height: 110)
+                      : RecentDrinks(
+                          onAdd: onAdd,
+                          recentDrinks: drinkAmounts.length < 2
+                              ? drinkAmounts.reversed.toList()
+                              : drinkAmounts.length >= 5
+                                  ? drinkAmounts
+                                      .sublist(drinkAmounts.length - 4,
+                                          drinkAmounts.length)
+                                      .reversed
+                                      .toList()
+                                  : drinkAmounts
+                                      .sublist(0, drinkAmounts.length)
+                                      .reversed
+                                      .toList()),
+                ],
               ),
             ),
-          )
-        ],
-      ),
+          ),
+        )
+      ],
     );
   }
 }
@@ -127,11 +123,12 @@ class TopActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      decoration: const BoxDecoration(
-          color: Colors.white,
-          backgroundBlendMode: BlendMode.lighten,
-          border: BorderDirectional(
+      decoration: BoxDecoration(
+          color: Theme.of(context).backgroundColor,
+          border: const BorderDirectional(
               bottom: BorderSide(color: Color.fromRGBO(0, 0, 0, 0.1)))),
       width: MediaQuery.of(context).size.width,
       child: Material(
@@ -140,23 +137,34 @@ class TopActions extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Text(
+                "Today's Progress",
+                style: TextStyle(
+                    color: isDarkTheme
+                        ? Colors.white
+                        : const Color.fromRGBO(0, 0, 0, 0.75),
+                    fontSize: 17,
+                    fontWeight: FontWeight.normal),
+              ),
+            ),
             Row(
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 10, top: 10, bottom: 10),
                   child: Container(
+                      height: 50,
+                      width: 50,
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(100),
-                          border: Border.all(
-                              color: isSunny
-                                  ? Colors.transparent
-                                  : const Color.fromRGBO(0, 0, 0, 0.2)),
+                          borderRadius: BorderRadius.circular(15),
                           color: isSunny
                               ? Theme.of(context).primaryColor
                               : Colors.transparent),
                       child: IconButton(
                           splashColor: Colors.transparent,
                           tooltip: "Sunny Day",
+                          iconSize: 20,
                           onPressed: () {
                             if (!isSunny) {
                               ScaffoldMessenger.of(context)
@@ -172,23 +180,24 @@ class TopActions extends StatelessWidget {
                             Icons.sunny,
                             color: isSunny
                                 ? Colors.white
-                                : const Color.fromRGBO(0, 0, 0, 0.2),
+                                : isDarkTheme
+                                    ? Colors.white70
+                                    : const Color.fromRGBO(0, 0, 0, 0.2),
                           ))),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(
                       top: 10, bottom: 10, right: 10, left: 10),
                   child: Container(
+                      height: 50,
+                      width: 50,
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(100),
-                          border: Border.all(
-                              color: isActive
-                                  ? Colors.transparent
-                                  : const Color.fromRGBO(0, 0, 0, 0.2)),
+                          borderRadius: BorderRadius.circular(15),
                           color: isActive
                               ? Theme.of(context).primaryColor
                               : Colors.transparent),
                       child: IconButton(
+                          iconSize: 20,
                           splashColor: Colors.transparent,
                           tooltip: "Active Day",
                           onPressed: () {
@@ -206,79 +215,13 @@ class TopActions extends StatelessWidget {
                             Icons.directions_bike_outlined,
                             color: isActive
                                 ? Colors.white
-                                : const Color.fromRGBO(0, 0, 0, 0.2),
+                                : isDarkTheme
+                                    ? Colors.white70
+                                    : const Color.fromRGBO(0, 0, 0, 0.2),
                           ))),
                 ),
               ],
             ),
-            const Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(15.0),
-                child: FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: Text(
-                    "Today's Progress",
-                    style: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.75)),
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.only(
-                  top: 10, left: 20, right: 20, bottom: 10),
-              child: Theme(
-                data: Theme.of(context).copyWith(useMaterial3: false),
-                child: PopupMenuButton<String>(
-                  position: PopupMenuPosition.under,
-                  elevation: 2,
-                  onSelected: (String value) async {
-                    switch (value) {
-                      case 'About':
-                        Navigator.pushNamed(context, AboutScreen.routeName);
-                        break;
-                      case 'Settings':
-                        final bool result = await Navigator.pushNamed(
-                            context, SettingsScreen.routeName) as bool;
-                        if (result) {
-                          loadPreferences();
-                        }
-                    }
-                  },
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  itemBuilder: (BuildContext context) {
-                    return {'Settings', 'About'}.map((String choice) {
-                      return PopupMenuItem<String>(
-                        value: choice,
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(0),
-                          horizontalTitleGap: 5,
-                          leading: Icon(choice == "Settings"
-                              ? Icons.settings
-                              : Icons.info_outline),
-                          title: Text(choice),
-                        ),
-                      );
-                    }).toList();
-                  },
-                ),
-              ),
-            ),
-            /* IconButton(
-              icon: const Icon(
-                Icons.settings,
-                size: 30,
-                color: Color.fromRGBO(0, 0, 0, 0.5),
-              ),
-              onPressed: () async {
-                final bool result =
-                    await Navigator.pushNamed(context, SettingsScreen.routeName)
-                        as bool;
-                if (result) {
-                  loadPreferences();
-                }
-              },
-            ), */
           ],
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:numberpicker/numberpicker.dart';
@@ -22,7 +23,7 @@ class SetupScreen extends StatefulWidget {
 }
 
 class _SetupScreenState extends State<SetupScreen> {
-  String activeUnit = "";
+  String activeUnit = "ml";
   String activeWeightUnit = "kg";
 
   TextEditingController weightController = TextEditingController();
@@ -45,44 +46,39 @@ class _SetupScreenState extends State<SetupScreen> {
     super.initState();
   }
 
-  bool validateWeight() {
+  bool validateWeight({bool setError = true}) {
     if (weightController.text.isEmpty || int.parse(weightController.text) < 1) {
-      setState(() {
-        weightIsValid = false;
-      });
+      if (setError) {
+        setState(() {
+          weightIsValid = false;
+        });
+      }
       return false;
     }
-    setState(() {
-      weightIsValid = true;
-    });
+    if (setError) {
+      setState(() {
+        weightIsValid = true;
+      });
+    }
     return true;
   }
 
-  bool validateAge() {
+  bool validateAge({bool setError = true}) {
     if (ageController.text.isEmpty || int.parse(ageController.text) < 1) {
-      setState(() {
-        ageIsValid = false;
-      });
-      return false;
-    }
-    setState(() {
-      ageIsValid = true;
-    });
-    return true;
-  }
+      if (setError) {
+        setState(() {
+          ageIsValid = false;
+        });
+      }
 
-  bool validateUnit() {
-    if (activeUnit != "") {
-      setState(() {
-        unitIsValid = true;
-      });
-      return true;
-    } else {
-      setState(() {
-        unitIsValid = false;
-      });
       return false;
     }
+    if (setError) {
+      setState(() {
+        ageIsValid = true;
+      });
+    }
+    return true;
   }
 
   void openReminderDialog(context) {
@@ -90,8 +86,9 @@ class _SetupScreenState extends State<SetupScreen> {
         context: context,
         builder: (BuildContext ctx) {
           return Dialog(
+            backgroundColor: Theme.of(context).backgroundColor,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
             child: Container(
                 padding: const EdgeInsets.all(20),
                 child: ReminderTimeDialog(
@@ -143,87 +140,81 @@ class _SetupScreenState extends State<SetupScreen> {
 
   void onSubmit() async {
     final prefs = await SharedPreferences.getInstance();
-    if (validateUnit()) {
-      final bool calculateiInputDataIsValid = validateWeight() && validateAge();
-      if (activeTabIndex == 0 && calculateiInputDataIsValid) {
-        prefs.setString("unit", activeUnit);
-        setReminders(prefs);
-        prefs
-            .setInt(
-                "intake_amount",
-                calculateIntake(
-                    num.parse(weightController.text),
-                    int.parse(ageController.text),
-                    activeWeightUnit,
-                    activeUnit))
-            .then((value) => Navigator.pushNamedAndRemoveUntil(
-                context, HomeScreen.routeName, (_) => false));
-      } else if (activeTabIndex == 1) {
-        setReminders(prefs);
-        prefs.setString("unit", activeUnit);
-        prefs.setInt("intake_amount", _currentGoal).then((value) =>
-            Navigator.pushNamedAndRemoveUntil(
-                context, HomeScreen.routeName, (_) => false));
-      }
+    final bool calculateiInputDataIsValid = validateWeight() && validateAge();
+    if (activeTabIndex == 0 && calculateiInputDataIsValid) {
+      prefs.setString("unit", activeUnit);
+      setReminders(prefs);
+      prefs
+          .setInt(
+              "intake_amount",
+              calculateIntake(num.parse(weightController.text),
+                  int.parse(ageController.text), activeWeightUnit, activeUnit))
+          .then((value) => Navigator.pushNamedAndRemoveUntil(
+              context, HomeScreen.routeName, (_) => false));
+    } else if (activeTabIndex == 1) {
+      setReminders(prefs);
+      prefs.setString("unit", activeUnit);
+      prefs.setInt("intake_amount", _currentGoal).then((value) =>
+          Navigator.pushNamedAndRemoveUntil(
+              context, HomeScreen.routeName, (_) => false));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final unitSelection = Padding(
-        padding: const EdgeInsets.all(25),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DropdownButton<String>(
-              value: activeUnit == "" ? null : activeUnit,
-              icon: const Icon(
-                Icons.arrow_drop_down,
-                size: 30,
-                color: Color(0xffD9D9D9),
-              ),
-              dropdownColor: Colors.white,
-              underline: Container(
-                color: !unitIsValid
-                    ? Colors.red
-                    : activeUnit != ""
-                        ? Theme.of(context).primaryColor
-                        : Colors.black26,
-                height: 1,
-              ),
-              borderRadius: BorderRadius.circular(5),
-              onChanged: (String? newValue) {
-                setState(() {
-                  activeUnit = newValue!;
-                  unitIsValid = true;
-                  if (newValue == "ml") {
-                    _currentGoal = 100;
-                  } else {
-                    _currentGoal = 5;
-                  }
-                });
-              },
-              elevation: 1,
-              hint: const Text("Choose Unit"),
-              items: <String>['ml', 'oz UK', 'oz US']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-          ],
-        ));
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
+    final unitSelection = Container(
+      width: MediaQuery.of(context).size.width,
+      padding: const EdgeInsets.only(bottom: 10, top: 25, right: 25, left: 25),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: ["ml", "oz UK", "oz US"]
+            .map(
+              (String unit) => OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      activeUnit = unit;
+                    });
+                  },
+                  style: ButtonStyle(
+                      shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      )),
+                      backgroundColor: MaterialStateProperty.all(
+                          activeUnit == unit
+                              ? Theme.of(context).primaryColor
+                              : Colors.transparent),
+                      side: MaterialStateProperty.all(BorderSide(
+                          color: activeUnit == unit
+                              ? Theme.of(context).primaryColor
+                              : isDarkTheme
+                                  ? const Color(0xff515151)
+                                  : const Color(0xffE9E9E9)))),
+                  child: Text(
+                    unit,
+                    style: TextStyle(
+                        color: activeUnit == unit
+                            ? Colors.white
+                            : isDarkTheme
+                                ? const Color(0xffCACACA)
+                                : const Color(0xff383838)),
+                  )),
+            )
+            .toList(),
+      ),
+    );
 
     final calculateSide = Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "Select your Weight",
-              style: TextStyle(fontSize: 18, color: Color(0xFF3B3B3B)),
+              style: TextStyle(
+                  fontSize: 18,
+                  color: isDarkTheme ? Colors.white : const Color(0xFF3B3B3B)),
             ),
             const SizedBox(
               height: 15,
@@ -231,7 +222,7 @@ class _SetupScreenState extends State<SetupScreen> {
             Row(
               children: [
                 SizedBox(
-                  height: 55,
+                  height: 50,
                   width: 150,
                   child: TextField(
                     onChanged: (_) {
@@ -254,8 +245,9 @@ class _SetupScreenState extends State<SetupScreen> {
                             width: 1.5),
                       ),
                     ),
-                    style: const TextStyle(
-                        color: Colors.black87, fontWeight: FontWeight.normal),
+                    style: TextStyle(
+                        color: isDarkTheme ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.normal),
                     controller: weightController,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
@@ -272,10 +264,18 @@ class _SetupScreenState extends State<SetupScreen> {
                     color: Color(0xffD9D9D9),
                   ),
                   elevation: 1,
-                  dropdownColor: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  style:
-                      const TextStyle(color: Color(0xff575757), fontSize: 18),
+                  dropdownColor: isDarkTheme
+                      ? const Color.fromARGB(255, 50, 50, 50)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(5),
+                  underline: Container(
+                    height: 1,
+                    color: isDarkTheme ? Colors.white12 : Colors.black12,
+                  ),
+                  style: TextStyle(
+                      color: isDarkTheme
+                          ? Colors.white54
+                          : const Color.fromRGBO(0, 0, 0, 0.4)),
                   onChanged: (String? newValue) {
                     setState(() {
                       activeWeightUnit = newValue!;
@@ -294,9 +294,11 @@ class _SetupScreenState extends State<SetupScreen> {
             const SizedBox(
               height: 20,
             ),
-            const Text(
+            Text(
               "Select your Age",
-              style: TextStyle(fontSize: 20, color: Color(0xFF3B3B3B)),
+              style: TextStyle(
+                  fontSize: 20,
+                  color: isDarkTheme ? Colors.white : const Color(0xFF3B3B3B)),
             ),
             const SizedBox(
               height: 15,
@@ -305,7 +307,7 @@ class _SetupScreenState extends State<SetupScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
-                  height: 55,
+                  height: 50,
                   width: 120,
                   child: TextField(
                     onChanged: (_) => validateAge(),
@@ -334,19 +336,25 @@ class _SetupScreenState extends State<SetupScreen> {
                 const SizedBox(
                   width: 15,
                 ),
-                const Text(
+                Text(
                   "Years",
-                  style: TextStyle(fontSize: 18, color: Color(0xFF3B3B3B)),
+                  style: TextStyle(
+                      fontSize: 18,
+                      color:
+                          isDarkTheme ? Colors.white : const Color(0xFF3B3B3B)),
                 ),
               ],
             ),
             const SizedBox(
               height: 20,
             ),
-            const Text(
+            Text(
               "Your weight and age are only used for the calculation and will not be saved.",
-              style:
-                  TextStyle(fontSize: 13, color: Color.fromRGBO(0, 0, 0, 0.5)),
+              style: TextStyle(
+                  fontSize: 13,
+                  color: isDarkTheme
+                      ? const Color.fromRGBO(255, 255, 255, .5)
+                      : const Color.fromRGBO(0, 0, 0, 0.5)),
             )
           ],
         ));
@@ -358,9 +366,12 @@ class _SetupScreenState extends State<SetupScreen> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "Select your Goal manually",
-                  style: TextStyle(fontSize: 18, color: Color(0xFF3B3B3B)),
+                  style: TextStyle(
+                      fontSize: 18,
+                      color:
+                          isDarkTheme ? Colors.white : const Color(0xFF3B3B3B)),
                 ),
                 Row(
                   children: [
@@ -368,8 +379,11 @@ class _SetupScreenState extends State<SetupScreen> {
                         minValue: activeUnit == "ml" ? 100 : 5,
                         maxValue: 10000,
                         itemHeight: 50,
-                        textStyle: const TextStyle(
-                            color: Color.fromRGBO(0, 0, 0, 0.3), fontSize: 18),
+                        textStyle: TextStyle(
+                            color: isDarkTheme
+                                ? Colors.white30
+                                : const Color.fromRGBO(0, 0, 0, 0.3),
+                            fontSize: 18),
                         selectedTextStyle: TextStyle(
                             color: Theme.of(context).primaryColor,
                             fontSize: 18),
@@ -410,17 +424,18 @@ class _SetupScreenState extends State<SetupScreen> {
           },
           indicatorColor: Theme.of(context).primaryColor,
           labelStyle: const TextStyle(fontWeight: FontWeight.normal),
-          unselectedLabelColor: const Color(0xff8C8C8C),
+          unselectedLabelColor:
+              isDarkTheme ? const Color(0xffE9E9E9) : const Color(0xff8C8C8C),
           labelColor: Theme.of(context).primaryColor,
           unselectedLabelStyle:
-              const TextStyle(fontWeight: FontWeight.normal, fontSize: 17),
-          labelPadding: const EdgeInsets.only(bottom: 5),
+              const TextStyle(fontWeight: FontWeight.normal, fontSize: 16),
+          labelPadding: const EdgeInsets.only(bottom: 0),
           tabs: const [
             Tab(
-              text: "Calculate",
+              text: "Calculate Goal",
             ),
             Tab(
-              text: "Manual",
+              text: "Choose Goal",
             )
           ],
         ),
@@ -434,21 +449,40 @@ class _SetupScreenState extends State<SetupScreen> {
     );
 
     return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          surfaceTintColor: Colors.white,
-          toolbarHeight: 10,
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: onSubmit,
-          backgroundColor: Theme.of(context).primaryColor,
-          icon: Text(
-            activeTabIndex == 0 ? "Finish" : "Finish",
-            style: const TextStyle(
-                fontSize: 19, color: Colors.white, fontWeight: FontWeight.w600),
+        floatingActionButton: AnimatedOpacity(
+          opacity: (activeTabIndex == 0 &&
+                      validateAge(setError: false) &&
+                      validateWeight(setError: false)) ||
+                  activeTabIndex == 1
+              ? 1
+              : 0,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            scale: (activeTabIndex == 0 &&
+                        validateAge(setError: false) &&
+                        validateWeight(setError: false)) ||
+                    activeTabIndex == 1
+                ? 1
+                : 0.5,
+            child: FloatingActionButton.extended(
+              onPressed: onSubmit,
+              backgroundColor: Theme.of(context).primaryColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              icon: Text(
+                activeTabIndex == 0 ? "Finish" : "Finish",
+                style: const TextStyle(
+                    fontSize: 19,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600),
+              ),
+              extendedIconLabelSpacing: 15,
+              label: const Icon(Icons.arrow_forward_ios, color: Colors.white),
+            ),
           ),
-          extendedIconLabelSpacing: 15,
-          label: const Icon(Icons.arrow_forward_ios, color: Colors.white),
         ),
         body: DefaultTabController(
           length: 2,
@@ -456,31 +490,33 @@ class _SetupScreenState extends State<SetupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(
+                  height: 50,
+                ),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Container(
-                    padding: const EdgeInsets.only(left: 20),
+                    padding: const EdgeInsets.only(top: 20),
+                    width: double.infinity,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
                         Text(
                           "Setup",
                           style: TextStyle(
                               fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xff3F3D56)),
+                              fontWeight: FontWeight.normal,
+                              color: isDarkTheme
+                                  ? Colors.white
+                                  : const Color(0xff383838)),
                         ),
-                        Text(
-                          "Setup your weight and age to calculate your water intake, or choose it manually",
-                          style: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.6)),
-                        )
                       ],
                     ),
                   ),
                   unitSelection,
                   tabBar,
-                  const Divider(
+                  Divider(
                     height: 1,
-                    color: Colors.black26,
+                    color: isDarkTheme ? Colors.white30 : Colors.black26,
                   ),
                   SwitchListTile(
                       controlAffinity: ListTileControlAffinity.leading,
@@ -498,10 +534,15 @@ class _SetupScreenState extends State<SetupScreen> {
                               notificationsActive = newValue;
                             });
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        "Please allow notifications in settings for this app")));
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content: Text(
+                                  "Notifications are disabled for this app"),
+                              action: SnackBarAction(
+                                  label: "Settings",
+                                  onPressed:
+                                      AppSettings.openNotificationSettings),
+                            ));
                           }
                         } else {
                           setState(() {
@@ -522,14 +563,20 @@ class _SetupScreenState extends State<SetupScreen> {
                               child: Column(children: [
                                 Text(
                                   "${formatTimeOfDay(selectedStartReminderTime)} - ${formatTimeOfDay(selectedFinishReminderTime)}",
-                                  style: const TextStyle(
-                                      color: Colors.black87, fontSize: 23),
+                                  style: TextStyle(
+                                      color: isDarkTheme
+                                          ? Colors.white
+                                          : Colors.black87,
+                                      fontSize: 23),
                                 ),
                                 Text(
                                   getReminderIntervalText(
                                       selectedReminderInterval),
-                                  style: const TextStyle(
-                                      color: Colors.black54, fontSize: 12),
+                                  style: TextStyle(
+                                      color: isDarkTheme
+                                          ? Colors.white54
+                                          : Colors.black54,
+                                      fontSize: 12),
                                 )
                               ]),
                             ),

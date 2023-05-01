@@ -43,6 +43,8 @@ class DrinktypeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return SizedBox(
       width: MediaQuery.of(context).size.width - 40,
       height: 125,
@@ -63,9 +65,10 @@ class DrinktypeSelector extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Material(
-              color: Colors.white,
-              elevation: 8,
-              shadowColor: Colors.black38,
+              color: isDarkTheme
+                  ? const Color.fromRGBO(255, 255, 255, 0.03)
+                  : const Color.fromRGBO(0, 0, 0, 0.03),
+              elevation: 0,
               borderRadius: BorderRadius.circular(10),
               child: InkWell(
                 splashColor: Theme.of(context).primaryColor.withAlpha(50),
@@ -105,7 +108,9 @@ class DrinktypeSelector extends StatelessWidget {
                         style: TextStyle(
                             color: selectedDrink == entry.value
                                 ? Theme.of(context).primaryColor
-                                : const Color.fromRGBO(0, 0, 0, 0.4)),
+                                : isDarkTheme
+                                    ? Colors.white70
+                                    : const Color.fromRGBO(0, 0, 0, 0.4)),
                       ),
                     ],
                   ),

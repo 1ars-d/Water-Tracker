@@ -78,6 +78,8 @@ class _ProgressState extends State<Progress>
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     int usePrevIntake =
         widget.prevIntake > 0 ? widget.prevIntake : widget.intakeAmount;
     return AnimatedBuilder(
@@ -97,7 +99,9 @@ class _ProgressState extends State<Progress>
                   AlwaysStoppedAnimation(Theme.of(context).primaryColor),
               /* borderColor: Colors.black12,
               borderWidth: 1, */
-              backgroundColor: Colors.white,
+              backgroundColor: isDarkTheme
+                  ? Theme.of(context).backgroundColor
+                  : Colors.white,
               value: valueTween.evaluate(curve),
               center: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -117,9 +121,11 @@ class _ProgressState extends State<Progress>
                               100),
                           duration: const Duration(milliseconds: 800),
                           style: TextStyle(
-                              color: widget.todaysAmount >= widget.intakeAmount
+                              color: widget.todaysAmount >=
+                                          widget.intakeAmount ||
+                                      isDarkTheme
                                   ? Colors.white
-                                  : const Color.fromARGB(255, 122, 215, 255),
+                                  : const Color.fromARGB(255, 152, 224, 255),
                               fontSize: 64,
                               fontWeight: FontWeight.bold),
                         ),
@@ -128,9 +134,10 @@ class _ProgressState extends State<Progress>
                         "%",
                         style: TextStyle(
                             fontSize: 30,
-                            color: widget.todaysAmount >= widget.intakeAmount
+                            color: widget.todaysAmount >= widget.intakeAmount ||
+                                    isDarkTheme
                                 ? Colors.white
-                                : const Color.fromARGB(255, 122, 215, 255),
+                                : const Color.fromARGB(255, 152, 224, 255),
                             fontWeight: FontWeight.w600),
                       ),
                     ],
@@ -140,13 +147,17 @@ class _ProgressState extends State<Progress>
                     children: [
                       Text(
                         widget.todaysAmount.toString(),
-                        style: const TextStyle(
-                            color: Colors.black26, fontSize: 17),
+                        style: TextStyle(
+                            color:
+                                isDarkTheme ? Colors.white54 : Colors.black26,
+                            fontSize: 17),
                       ),
                       Text(
                         ' / ${widget.intakeAmount.toString()}${widget.activeUnit}',
-                        style: const TextStyle(
-                            fontSize: 17, color: Colors.black26),
+                        style: TextStyle(
+                            fontSize: 17,
+                            color:
+                                isDarkTheme ? Colors.white54 : Colors.black26),
                       ),
                     ],
                   )

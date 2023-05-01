@@ -58,6 +58,8 @@ class AddModalState extends State<AddModal> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return SingleChildScrollView(
       child: Wrap(children: [
         Container(
@@ -88,11 +90,11 @@ class AddModalState extends State<AddModal> {
                               height: 50,
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(13),
-                                  color: Colors.white,
+                                  color: Theme.of(context).backgroundColor,
                                   boxShadow: const [
                                     BoxShadow(
                                         color: Color.fromRGBO(0, 0, 0, 0.14),
-                                        blurRadius: 10,
+                                        blurRadius: 2,
                                         offset: Offset(1, 1))
                                   ]),
                               child: Row(children: [
@@ -152,10 +154,12 @@ class AddModalState extends State<AddModal> {
                                                         DateTime.now().year)
                                                 ? "Today"
                                                 : '${activeDate.day.toString()}/${activeDate.month.toString()}/${activeDate.year.toString()}',
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                                 fontWeight: FontWeight.normal,
-                                                color: Color.fromRGBO(
-                                                    0, 0, 0, 0.7))),
+                                                color: isDarkTheme
+                                                    ? Colors.white
+                                                    : const Color.fromRGBO(
+                                                        0, 0, 0, 0.7))),
                                       ),
                                     ))
                               ]),
@@ -170,11 +174,11 @@ class AddModalState extends State<AddModal> {
                                 height: 50,
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(13),
-                                    color: Colors.white,
+                                    color: Theme.of(context).backgroundColor,
                                     boxShadow: const [
                                       BoxShadow(
                                           color: Color.fromRGBO(0, 0, 0, 0.14),
-                                          blurRadius: 10,
+                                          blurRadius: 2,
                                           offset: Offset(1, 1))
                                     ]),
                                 child: TextButton(
@@ -199,9 +203,12 @@ class AddModalState extends State<AddModal> {
                                   },
                                   child: Text(
                                       '${activeTime.hour}:${activeTime.minute.toString().length < 2 ? "0${activeTime.minute}" : activeTime.minute}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontWeight: FontWeight.normal,
-                                          color: Color.fromRGBO(0, 0, 0, 0.7))),
+                                          color: isDarkTheme
+                                              ? Colors.white
+                                              : const Color.fromRGBO(
+                                                  0, 0, 0, 0.7))),
                                 ),
                               ))
                         ],
@@ -222,8 +229,10 @@ class AddModalState extends State<AddModal> {
                                   minValue: activeUnit == "ml" ? 10 : 5,
                                   maxValue: 10000,
                                   itemHeight: 50,
-                                  textStyle: const TextStyle(
-                                      color: Color.fromRGBO(0, 0, 0, 0.3),
+                                  textStyle: TextStyle(
+                                      color: isDarkTheme
+                                          ? Colors.white38
+                                          : const Color.fromRGBO(0, 0, 0, 0.3),
                                       fontSize: 18),
                                   selectedTextStyle: TextStyle(
                                       color: Theme.of(context).primaryColor,
@@ -258,41 +267,74 @@ class AddModalState extends State<AddModal> {
                             height: 15,
                           ),
                           SizedBox(
-                            width: double.infinity,
-                            height: 60,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  elevation: _currentAmount > 0 ? 0 : 0,
-                                  shadowColor:
-                                      const Color.fromARGB(255, 4, 217, 255)
-                                          .withOpacity(.5),
-                                  splashFactory: _currentAmount > 0
-                                      ? InkRipple.splashFactory
-                                      : NoSplash.splashFactory,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10)),
-                                  primary: _currentAmount > 0
-                                      ? Theme.of(context).primaryColor
-                                      : Theme.of(context).primaryColor),
-                              onPressed: _currentAmount > 0
-                                  ? () => addHandler(
-                                      _currentAmount,
-                                      activeUnit,
-                                      DateTime(
-                                          activeDate.year,
-                                          activeDate.month,
-                                          activeDate.day,
-                                          activeTime.hour,
-                                          activeTime.minute),
-                                      selectedDrink)
-                                  : () {},
-                              child: const Text(
-                                "Add",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 17),
-                              ),
-                            ),
-                          )
+                              width: double.infinity,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                      child: SizedBox(
+                                    height: 50,
+                                    child: TextButton(
+                                      style: TextButton.styleFrom(
+                                          primary:
+                                              Theme.of(context).primaryColor,
+                                          backgroundColor: isDarkTheme
+                                              ? Theme.of(context)
+                                                  .primaryColor
+                                                  .withOpacity(0.1)
+                                              : Theme.of(context)
+                                                  .primaryColor
+                                                  .withOpacity(0.15),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadiusDirectional
+                                                      .circular(8))),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text("Cancel"),
+                                    ),
+                                  )),
+                                  const SizedBox(
+                                    width: 15,
+                                  ),
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: 50,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                            elevation:
+                                                _currentAmount > 0 ? 0 : 0,
+                                            shadowColor: const Color.fromARGB(
+                                                    255, 4, 217, 255)
+                                                .withOpacity(.5),
+                                            splashFactory:
+                                                InkRipple.splashFactory,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
+                                            primary:
+                                                Theme.of(context).primaryColor),
+                                        onPressed: () => addHandler(
+                                            _currentAmount,
+                                            activeUnit,
+                                            DateTime(
+                                                activeDate.year,
+                                                activeDate.month,
+                                                activeDate.day,
+                                                activeTime.hour,
+                                                activeTime.minute),
+                                            selectedDrink),
+                                        child: const Text(
+                                          "Add",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 17),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ))
                         ],
                       ),
                     ],

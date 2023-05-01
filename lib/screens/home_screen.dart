@@ -140,6 +140,8 @@ class _HomeScreenState extends State<HomeScreen> {
           (widget.isSunny ? intakeChangeDifference : 0);
     }
 
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
         appBar: AppBar(
           toolbarHeight: 0,
@@ -153,6 +155,9 @@ class _HomeScreenState extends State<HomeScreen> {
             statusBarBrightness: Brightness.light, // For iOS (dark icons)
           ),
         ),
+        backgroundColor: isDarkTheme
+            ? const Color(0xff2D2D2D)
+            : const Color.fromRGBO(0, 0, 0, 0.03),
         body: Center(
           child: HomescreenMain(
             activeUnit: widget.activeUnit,

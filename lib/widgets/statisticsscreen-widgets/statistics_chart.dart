@@ -35,6 +35,8 @@ class StatisticsChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     final List<Color> gradientColors = [
       Theme.of(context).primaryColor,
       const Color.fromARGB(255, 74, 213, 255)
@@ -55,14 +57,18 @@ class StatisticsChart extends StatelessWidget {
                       if (activeUnit == "ml") {
                         return Text(
                           '${(value / 1000).toStringAsFixed((value / 1000) % 1 == 0 ? 0 : 1)}L',
-                          style: const TextStyle(
-                              color: Color.fromRGBO(0, 0, 0, 0.6)),
+                          style: TextStyle(
+                              color: isDarkTheme
+                                  ? Colors.white70
+                                  : const Color.fromRGBO(0, 0, 0, 0.6)),
                         );
                       }
                       return Text(
                         '${value.toInt()}$activeUnit',
-                        style: const TextStyle(
-                            color: Color.fromRGBO(0, 0, 0, 0.6)),
+                        style: TextStyle(
+                            color: isDarkTheme
+                                ? Colors.white70
+                                : const Color.fromRGBO(0, 0, 0, 0.6)),
                       );
                     }),
               ),
@@ -81,8 +87,10 @@ class StatisticsChart extends StatelessWidget {
                             ),
                             Text(
                               "${parseDay(now.weekday)}.",
-                              style: const TextStyle(
-                                  color: Color.fromRGBO(0, 0, 0, 0.6)),
+                              style: TextStyle(
+                                  color: isDarkTheme
+                                      ? Colors.white70
+                                      : const Color.fromRGBO(0, 0, 0, 0.6)),
                             ),
                           ],
                         );
@@ -90,18 +98,25 @@ class StatisticsChart extends StatelessWidget {
               show: true),
           borderData: FlBorderData(
               border: Border.all(
-                  width: 1, color: const Color.fromRGBO(0, 0, 0, 0.2))),
+                  width: 1,
+                  color: isDarkTheme
+                      ? Colors.white24
+                      : const Color.fromRGBO(0, 0, 0, 0.2))),
           gridData: FlGridData(
               show: true,
               getDrawingHorizontalLine: (value) {
                 return FlLine(
-                  color: const Color.fromRGBO(0, 0, 0, 0.2),
+                  color: isDarkTheme
+                      ? Colors.white24
+                      : const Color.fromRGBO(0, 0, 0, 0.2),
                   strokeWidth: 1,
                 );
               },
               getDrawingVerticalLine: (value) {
                 return FlLine(
-                  color: const Color.fromRGBO(0, 0, 0, 0.2),
+                  color: isDarkTheme
+                      ? Colors.white24
+                      : const Color.fromRGBO(0, 0, 0, 0.2),
                   strokeWidth: 1,
                 );
               }),
@@ -112,7 +127,9 @@ class StatisticsChart extends StatelessWidget {
           lineBarsData: [
             LineChartBarData(
                 dashArray: [7, 5],
-                color: const Color.fromRGBO(0, 0, 0, 0.2),
+                color: isDarkTheme
+                    ? Colors.white54
+                    : const Color.fromRGBO(0, 0, 0, 0.3),
                 spots: [
                   FlSpot(0, intakeAmount.toDouble()),
                   FlSpot(1, intakeAmount.toDouble()),

@@ -37,12 +37,16 @@ class ReminderTimeDialogState extends State<ReminderTimeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Wrap(
       children: [
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text(
+          Text(
             "Reminder Time",
-            style: TextStyle(fontSize: 18, color: Colors.black87),
+            style: TextStyle(
+                fontSize: 18,
+                color: isDarkTheme ? Colors.white : Colors.black87),
           ),
           const SizedBox(
             height: 10,
@@ -51,27 +55,39 @@ class ReminderTimeDialogState extends State<ReminderTimeDialog> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text("Start time"),
-              InkWell(
-                onTap: () async {
-                  showTimePicker(
-                          context: context,
-                          initialTime: selectedStartReminderTime)
-                      .then((value) {
-                    if (value != null) {
-                      setState(() {
-                        selectedStartReminderTime = value;
-                      });
-                    }
-                  });
-                },
-                child: Container(
-                  width: 130,
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                      border: Border(
-                          bottom: BorderSide(
-                              color: Theme.of(context).primaryColor))),
-                  child: Text(formatTimeOfDay(selectedStartReminderTime)),
+              SizedBox(
+                width: 130,
+                child: OutlinedButton(
+                  style: ButtonStyle(
+                      shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      )),
+                      backgroundColor:
+                          MaterialStateProperty.all(Colors.transparent),
+                      side: MaterialStateProperty.all(BorderSide(
+                          color: isDarkTheme
+                              ? Colors.white30
+                              : const Color(0xffE9E9E9)))),
+                  onPressed: () async {
+                    showTimePicker(
+                            context: context,
+                            initialTime: selectedStartReminderTime)
+                        .then((value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedStartReminderTime = value;
+                        });
+                      }
+                    });
+                  },
+                  child: Text(
+                    formatTimeOfDay(selectedStartReminderTime),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: isDarkTheme
+                            ? Colors.white
+                            : const Color(0xff383838)),
+                  ),
                 ),
               )
             ],
@@ -83,27 +99,39 @@ class ReminderTimeDialogState extends State<ReminderTimeDialog> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text("Finish time"),
-              InkWell(
-                onTap: () async {
-                  showTimePicker(
-                          context: context,
-                          initialTime: selectedFinishReminderTime)
-                      .then((value) {
-                    if (value != null) {
-                      setState(() {
-                        selectedFinishReminderTime = value;
-                      });
-                    }
-                  });
-                },
-                child: Container(
-                  width: 130,
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                      border: Border(
-                          bottom: BorderSide(
-                              color: Theme.of(context).primaryColor))),
-                  child: Text(formatTimeOfDay(selectedFinishReminderTime)),
+              SizedBox(
+                width: 130,
+                child: OutlinedButton(
+                  style: ButtonStyle(
+                      shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      )),
+                      backgroundColor:
+                          MaterialStateProperty.all(Colors.transparent),
+                      side: MaterialStateProperty.all(BorderSide(
+                          color: isDarkTheme
+                              ? Colors.white30
+                              : const Color(0xffE9E9E9)))),
+                  onPressed: () async {
+                    showTimePicker(
+                            context: context,
+                            initialTime: selectedFinishReminderTime)
+                        .then((value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedFinishReminderTime = value;
+                        });
+                      }
+                    });
+                  },
+                  child: Text(
+                    formatTimeOfDay(selectedFinishReminderTime),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: isDarkTheme
+                            ? Colors.white
+                            : const Color(0xff383838)),
+                  ),
                 ),
               )
             ],
@@ -120,7 +148,9 @@ class ReminderTimeDialogState extends State<ReminderTimeDialog> {
                 child: DropdownButton<int>(
                   borderRadius: BorderRadius.circular(5),
                   elevation: 1,
-                  dropdownColor: Colors.white,
+                  dropdownColor: isDarkTheme
+                      ? const Color.fromARGB(255, 50, 50, 50)
+                      : Colors.white,
                   value: selectedReminderInterval,
                   items:
                       <int>[0, 1, 2, 3].map<DropdownMenuItem<int>>((int value) {

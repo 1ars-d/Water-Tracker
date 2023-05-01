@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:numberpicker/numberpicker.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/helpers/helpers.dart';
+import 'package:src/helpers/theme_provider.dart';
 import 'package:src/notifications/notifications.dart';
-import 'package:src/screens/setup_screen.dart';
+import 'package:src/screens/about_screen.dart';
+import 'package:src/screens/settings-screens/drink_reminder_screen.dart';
+import 'package:src/screens/settings-screens/intake_goal_screen.dart';
+import 'package:src/screens/settings-screens/reminder_times_screen.dart';
+import 'package:src/screens/startup_navigation.dart';
+import 'package:src/widgets/settings-screen/settings_item.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:workmanager/workmanager.dart';
 import '../boxes.dart';
 import '../widgets/setup-widgets/calculate_dialog.dart';
 import '../widgets/setup-widgets/reminder_time_dialog.dart';
-import 'about_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   static const routeName = "/settings";
@@ -122,7 +127,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _currentGoal = prefs.getInt("intake_amount") ?? 0;
         activeUnit = newUnit;
-        intakeIsExpanded = true;
       });
     }
   }
@@ -153,6 +157,101 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ));
   }
 
+  void showUnitDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Wrap(
+                children: [
+                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                    Row(
+                      children: const [
+                        Text(
+                          "Unit System",
+                          style: TextStyle(fontSize: 16),
+                          textAlign: TextAlign.start,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.all(0),
+                      onTap: () {
+                        setUnit("ml");
+                        Navigator.pop(context);
+                      },
+                      title: const Text("Metric System (L/ml)"),
+                      leading: Radio<String>(
+                        activeColor: Theme.of(context).primaryColor,
+                        value: "ml",
+                        groupValue: activeUnit,
+                        onChanged: (String? value) {
+                          setUnit(value as String);
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.all(0),
+                      onTap: () {
+                        setUnit("oz UK");
+                        Navigator.pop(context);
+                      },
+                      title: const Text("UK System (fl. oz)"),
+                      leading: Radio<String>(
+                        activeColor: Theme.of(context).primaryColor,
+                        value: "oz UK",
+                        groupValue: activeUnit,
+                        onChanged: (String? value) {
+                          setUnit(value as String);
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.all(0),
+                      onTap: () {
+                        setUnit("oz US");
+                        Navigator.pop(context);
+                      },
+                      title: const Text("US System (fl. oz)"),
+                      leading: Radio<String>(
+                        activeColor: Theme.of(context).primaryColor,
+                        value: "oz US",
+                        groupValue: activeUnit,
+                        onChanged: (String? value) {
+                          setUnit(value as String);
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          primary: Theme.of(context).primaryColor,
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadiusDirectional.circular(8))),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Cancel"),
+                    ),
+                  ]),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
   void clearData(context) async {
     final box = Boxes.getDrinkAmounts();
     await box.deleteFromDisk();
@@ -160,10 +259,111 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await preferences.clear();
     await Workmanager().cancelAll();
     Navigator.pushNamedAndRemoveUntil(
-        context, SetupScreen.routeName, (route) => false);
+        context, StartupNavigation.routeName, (route) => false);
+  }
+
+  void showThemeModal(context) async {
+    showDialog(
+        context: context,
+        builder: (BuildContext ctx) {
+          final themeProvider = Provider.of<ThemeProvider>(context);
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Wrap(
+                children: [
+                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                    Row(
+                      children: const [
+                        Text(
+                          "Theme",
+                          style: TextStyle(fontSize: 16),
+                          textAlign: TextAlign.start,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.all(0),
+                      onTap: () {
+                        final themeProvider =
+                            Provider.of<ThemeProvider>(context, listen: false);
+                        themeProvider.setTheme(ThemeMode.dark);
+                        Navigator.pop(context);
+                      },
+                      title: const Text("Dark"),
+                      leading: Radio<String>(
+                        activeColor: Theme.of(context).primaryColor,
+                        value: ThemeMode.dark.toString(),
+                        groupValue: themeProvider.theme.toString(),
+                        onChanged: (String? value) {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.all(0),
+                      onTap: () {
+                        final themeProvider =
+                            Provider.of<ThemeProvider>(context, listen: false);
+                        themeProvider.setTheme(ThemeMode.light);
+                        Navigator.pop(context);
+                      },
+                      title: const Text("Light"),
+                      leading: Radio<String>(
+                        activeColor: Theme.of(context).primaryColor,
+                        value: ThemeMode.light.toString(),
+                        groupValue: themeProvider.theme.toString(),
+                        onChanged: (String? value) {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.all(0),
+                      onTap: () {
+                        final themeProvider =
+                            Provider.of<ThemeProvider>(context, listen: false);
+                        themeProvider.setTheme(ThemeMode.system);
+                        Navigator.pop(context);
+                      },
+                      title: const Text("System"),
+                      leading: Radio<String>(
+                        activeColor: Theme.of(context).primaryColor,
+                        value: ThemeMode.system.toString(),
+                        groupValue: themeProvider.theme.toString(),
+                        onChanged: (String? value) {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          primary: Theme.of(context).primaryColor,
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadiusDirectional.circular(8))),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text("Cancel"),
+                    ),
+                  ]),
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   void showDeleteDialog(context) async {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
@@ -178,7 +378,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             style: TextButton.styleFrom(
-                primary: Colors.black54,
+                primary: isDarkTheme ? Colors.white60 : Colors.black54,
                 padding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
                 shape: RoundedRectangleBorder(
@@ -207,6 +407,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    final Map<String, String> unitTexts = {
+      "ml": "Metric System (L/ml)",
+      "oz UK": "UK System (fl. oz)",
+      "oz US": "US System (fl. oz)"
+    };
+
     return WillPopScope(
       onWillPop: () async {
         Navigator.pop(context, true);
@@ -214,28 +423,127 @@ class _SettingsScreenState extends State<SettingsScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-            systemOverlayStyle: const SystemUiOverlayStyle(
-              // Status bar color
-              statusBarColor: Colors.transparent,
-
-              // Status bar brightness (optional)
-              statusBarIconBrightness:
-                  Brightness.dark, // For Android (dark icons)
-              statusBarBrightness: Brightness.light, // For iOS (dark icons)
-            ),
+            toolbarHeight: 40,
+            systemOverlayStyle: SystemUiOverlayStyle(
+                statusBarColor: Theme.of(context).scaffoldBackgroundColor,
+                statusBarIconBrightness:
+                    isDarkTheme ? Brightness.light : Brightness.dark),
             title: const Text("Settings"),
-            surfaceTintColor: Colors.white,
-            shadowColor: const Color.fromRGBO(0, 0, 0, 0.2),
+            backgroundColor: Colors.transparent,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios),
+              icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.pop(context, true),
             )),
         body: SingleChildScrollView(
             child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ExpansionPanelList(
+            const SizedBox(
+              height: 20,
+            ),
+            Container(
+              margin: const EdgeInsets.only(left: 56, bottom: 10),
+              child: Text(
+                "General",
+                style: TextStyle(
+                    fontSize: 16, color: Theme.of(context).primaryColor),
+              ),
+            ),
+            SettingsItem(
+                onTap: showUnitDialog,
+                title: "Unit System",
+                subtitle: unitTexts.containsKey(activeUnit)
+                    ? unitTexts[activeUnit] as String
+                    : "asdf",
+                icon: Icons.calculate_outlined),
+            SettingsItem(
+              onTap: () {
+                Navigator.pushNamed(context, IntakeGoalScreen.routeName)
+                    .then((value) async {
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  setState(() {
+                    _currentGoal = prefs.getInt("intake_amount") ?? 0;
+                  });
+                });
+              },
+              title: "Intake Goal",
+              subtitle: '$_currentGoal$activeUnit',
+              icon: Icons.flag_outlined,
+            ),
+            Divider(
+              color: isDarkTheme ? Colors.white12 : const Color(0xffE4E4E4),
+              thickness: 1,
+            ),
+            Container(
+              margin: const EdgeInsets.only(left: 56, bottom: 10, top: 10),
+              child: Text(
+                "Reminders",
+                style: TextStyle(
+                    fontSize: 16, color: Theme.of(context).primaryColor),
+              ),
+            ),
+            SettingsItem(
+                onTap: () {
+                  Navigator.pushNamed(context, DrinkReminderScreen.routeName)
+                      .then((value) => loadData());
+                },
+                title: "Drink Reminders",
+                subtitle: notificationsActive
+                    ? 'Intervall - ${getReminderIntervalText(selectedReminderInterval)}'
+                    : 'Disabled',
+                icon: Icons.local_drink_outlined),
+            SettingsItem(
+                onTap: () {
+                  Navigator.pushNamed(context, ReminderTimesScreen.routeName);
+                },
+                title: "Reminder Times",
+                subtitle: "Start and end times",
+                icon: Icons.access_time),
+            Divider(
+              color: isDarkTheme ? Colors.white12 : const Color(0xffE4E4E4),
+              thickness: 1,
+            ),
+            Container(
+              margin: const EdgeInsets.only(left: 56, bottom: 10, top: 10),
+              child: Text(
+                "More",
+                style: TextStyle(
+                    fontSize: 16, color: Theme.of(context).primaryColor),
+              ),
+            ),
+            SettingsItem(
+                onTap: () {
+                  showThemeModal(context);
+                },
+                title: "Appearance",
+                subtitle: themeProvider.theme.name[0].toUpperCase() +
+                    themeProvider.theme.name.substring(1),
+                icon: Icons.brightness_6_outlined),
+            SettingsItem(
+                onTap: () {
+                  showDeleteDialog(context);
+                },
+                title: "Delete All Data",
+                subtitle: "Full Reset",
+                icon: Icons.delete_outline),
+            SettingsItem(
+                onTap: () async {
+                  await launchUrl(
+                      Uri.parse("mailto:minimal.water.tracker@gmail.com"));
+                },
+                title: "Contact",
+                subtitle: "minimal.water.tracker@gmail.com",
+                icon: Icons.email_outlined),
+            SettingsItem(
+                onTap: () {
+                  Navigator.pushNamed(context, AboutScreen.routeName);
+                },
+                title: "About",
+                subtitle: "v1.0.4",
+                icon: Icons.info_outline),
+            /* ExpansionPanelList(
               elevation: 1,
               dividerColor: Colors.black12,
               expandedHeaderPadding: const EdgeInsets.all(0),
@@ -558,7 +866,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ],
               ),
-            ),
+            ), */
           ],
         )),
       ),

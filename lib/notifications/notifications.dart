@@ -31,6 +31,7 @@ class NotificationsApi {
   }
 }
 
+
 void remindersCallbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     await NotificationsApi.init();

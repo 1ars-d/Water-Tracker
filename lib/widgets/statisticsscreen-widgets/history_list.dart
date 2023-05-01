@@ -22,7 +22,7 @@ class HistoryList extends StatelessWidget {
     showDialog<String>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         title: const Text('Delete all Entries from date'),
         content: const Text(
             'Are you sure you want to delete all entries from this date?'),
@@ -87,7 +87,7 @@ class HistoryList extends StatelessWidget {
     showDialog<String>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         title: const Text('Delete Entry'),
         content: const Text('Are you sure you want to delete this entry?'),
         contentPadding: const EdgeInsets.only(left: 20, bottom: 5, right: 20),
@@ -157,17 +157,24 @@ class HistoryList extends StatelessWidget {
       }
     }
 
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return drinkAmounts.isEmpty
-        ? const Center(
+        ? Center(
             child: Text("No Data",
-                style: TextStyle(color: Color.fromRGBO(0, 0, 0, 0.7))),
+                style: TextStyle(
+                    color: isDarkTheme
+                        ? Colors.white
+                        : const Color.fromRGBO(0, 0, 0, 0.7))),
           )
         : ListView(
             children: datesMap.entries.map((e) {
               return Column(
                 children: [
                   Material(
-                    color: const Color(0xffF9F9F9),
+                    color: isDarkTheme
+                        ? const Color.fromRGBO(0, 0, 0, 0.03)
+                        : const Color(0xffF9F9F9),
                     child: InkWell(
                       onTap: () {
                         ScaffoldMessenger.of(context)

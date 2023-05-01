@@ -15,6 +15,8 @@ class AttributionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return SizedBox(
       width: MediaQuery.of(context).size.width,
       height: 30,
@@ -39,7 +41,10 @@ class AttributionTile extends StatelessWidget {
               ),
               Text(
                 "by $sourceText",
-                style: const TextStyle(color: Color.fromRGBO(0, 0, 0, 0.6)),
+                style: TextStyle(
+                    color: isDarkTheme
+                        ? Colors.white70
+                        : const Color.fromRGBO(0, 0, 0, 0.6)),
               ),
             ],
           ),

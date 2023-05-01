@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:src/boxes.dart';
 import 'package:src/models/DrinkAmount.dart';
@@ -19,7 +20,6 @@ class NavigationController extends StatefulWidget {
 
 class NavigationControllerState extends State<NavigationController> {
   // * Page Management
-  late PageController pageController;
   int activeIndex = 0;
   final iconsList = [Icons.apps, Icons.bar_chart];
 
@@ -64,7 +64,6 @@ class NavigationControllerState extends State<NavigationController> {
 
   @override
   void initState() {
-    pageController = PageController(initialPage: widget.initIndex);
     activeIndex = widget.initIndex;
     loadPreferences();
     super.initState();
@@ -91,7 +90,6 @@ class NavigationControllerState extends State<NavigationController> {
   void createModal() {
     showModalBottomSheet(
         elevation: 10,
-        backgroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(10), topRight: Radius.circular(10))),
@@ -103,7 +101,16 @@ class NavigationControllerState extends State<NavigationController> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: 0,
+        systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: Theme.of(context).scaffoldBackgroundColor,
+            statusBarIconBrightness:
+                isDarkTheme ? Brightness.light : Brightness.dark),
+      ),
       body: pageViewBuilder(),
       floatingActionButton: SizedBox(
         height: 65,
@@ -121,54 +128,51 @@ class NavigationControllerState extends State<NavigationController> {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: NavBar(
+        loadPreferences: loadPreferences,
         activeIndex: activeIndex,
         setPage: (int newIndex) {
-          pageController.animateToPage(newIndex,
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.easeInOut);
+          setState(() {
+            activeIndex = newIndex;
+          });
         },
       ),
     );
   }
 
-  PageView pageViewBuilder() {
-    return PageView(
-        physics: const NeverScrollableScrollPhysics(),
-        onPageChanged: onPageChanged,
-        controller: pageController,
-        children: [
-          ValueListenableBuilder<Box<DrinkAmount>>(
-              valueListenable: Boxes.getDrinkAmounts().listenable(),
-              builder: (context, box, _) {
-                final drinkAmounts = box.values.toList().cast<DrinkAmount>();
-                return HomeScreen(
-                  changeActive: changeActive,
-                  changeSunny: changeSunny,
-                  loadPreferences: loadPreferences,
-                  activeUnit: activeUnit,
-                  intakeAmount: intakeAmount,
-                  isSunny: isSunny,
-                  isActive: isActive,
-                  onAdd: onAdd,
-                  prevIsActive: prevIsActive,
-                  prevIsSunny: prevIsActive,
-                  setPrevIsActive: setPrevIsActive,
-                  setPrevIsSunny: setPrevIsSunny,
-                  drinksAmounts: drinkAmounts,
-                );
-              }),
-          ValueListenableBuilder<Box<DrinkAmount>>(
-              valueListenable: Boxes.getDrinkAmounts().listenable(),
-              builder: (context, box, _) {
-                final drinkAmounts = box.values.toList().cast<DrinkAmount>();
-                return StatisticsScreen(
-                  activeUnit: activeUnit,
-                  intakeAmount: intakeAmount,
-                  drinksAmounts: drinkAmounts,
-                );
-              })
-        ]);
+  Widget pageViewBuilder() {
+    return IndexedStack(index: activeIndex, children: [
+      ValueListenableBuilder<Box<DrinkAmount>>(
+          valueListenable: Boxes.getDrinkAmounts().listenable(),
+          builder: (context, box, _) {
+            final drinkAmounts = box.values.toList().cast<DrinkAmount>();
+            return HomeScreen(
+              changeActive: changeActive,
+              changeSunny: changeSunny,
+              loadPreferences: loadPreferences,
+              activeUnit: activeUnit,
+              intakeAmount: intakeAmount,
+              isSunny: isSunny,
+              isActive: isActive,
+              onAdd: onAdd,
+              prevIsActive: prevIsActive,
+              prevIsSunny: prevIsSunny,
+              setPrevIsActive: setPrevIsActive,
+              setPrevIsSunny: setPrevIsSunny,
+              drinksAmounts: drinkAmounts,
+            );
+          }),
+      ValueListenableBuilder<Box<DrinkAmount>>(
+          valueListenable: Boxes.getDrinkAmounts().listenable(),
+          builder: (context, box, _) {
+            final drinkAmounts = box.values.toList().cast<DrinkAmount>();
+            return StatisticsScreen(
+              activeUnit: activeUnit,
+              intakeAmount: intakeAmount,
+              drinksAmounts: drinkAmounts,
+            );
+          })
+    ]);
   }
 }
